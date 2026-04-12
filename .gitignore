@@ -1,0 +1,31 @@
+# Dépendances
+node_modules/
+
+# Variables d'environnement
+.env
+.env.local
+
+# Build
+dist/
+build/
+
+# Expo / React Native
+.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Prisma
+prisma/migrations/dev.db
