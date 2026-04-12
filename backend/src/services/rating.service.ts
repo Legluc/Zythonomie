@@ -1,0 +1,147 @@
+import { Prisma } from '@prisma/client';
+import prisma from '../lib/prisma';
+import { HttpError } from '../lib/http-error';
+
+const ratingSelect = {
+  id: true,
+  id_user: true,
+  id_beer: true,
+  content: true,
+  rate: true,
+  created_at: true,
+  deleted_at: true,
+  user: {
+    select: {
+      id: true,
+      firstname: true,
+      name: true,
+      mail: true,
+    },
+  },
+  beer: {
+    select: {
+      id: true,
+      name: true,
+      alcool: true,
+    },
+  },
+} satisfies Prisma.RatingSelect;
+
+export type RatingPublic = Prisma.RatingGetPayload<{ select: typeof ratingSelect }>;
+
+export interface CreateRatingInput {
+  id_user: number;
+  id_beer: number;
+  content: string;
+  rate: number;
+}
+
+export interface UpdateRatingInput {
+  content?: string;
+  rate?: number;
+}
+
+export async function findRatingsByBeer(beerId: number): Promise<RatingPublic[]> {
+  return prisma.rating.findMany({
+    where: {
+      id_beer: beerId,
+      deleted_at: null,
+    },
+    select: ratingSelect,
+    orderBy: { created_at: 'desc' },
+  });
+}
+
+export async function findRatingsByUser(userId: number): Promise<RatingPublic[]> {
+  return prisma.rating.findMany({
+    where: {
+      id_user: userId,
+      deleted_at: null,
+    },
+    select: ratingSelect,
+    orderBy: { created_at: 'desc' },
+  });
+}
+
+export async function createRating(input: CreateRatingInput): Promise<RatingPublic> {
+  await ensureActiveUser(input.id_user);
+  await ensureActiveBeer(input.id_beer);
+
+  const existing = await prisma.rating.findFirst({
+    where: {
+      id_user: input.id_user,
+      id_beer: input.id_beer,
+      deleted_at: null,
+    },
+    select: { id: true },
+  });
+
+  if (existing) {
+    throw new HttpError(409, 'RATING_ALREADY_EXISTS', 'Une seule note est autorisee par couple user-beer');
+  }
+
+  return prisma.rating.create({
+    data: {
+      id_user: input.id_user,
+      id_beer: input.id_beer,
+      content: input.content,
+      rate: input.rate,
+    },
+    select: ratingSelect,
+  });
+}
+
+export async function updateRating(id: number, input: UpdateRatingInput): Promise<RatingPublic> {
+  await ensureActiveRating(id);
+
+  return prisma.rating.update({
+    where: { id },
+    data: {
+      content: input.content,
+      rate: input.rate,
+    },
+    select: ratingSelect,
+  });
+}
+
+export async function softDeleteRating(id: number): Promise<void> {
+  await ensureActiveRating(id);
+
+  await prisma.rating.update({
+    where: { id },
+    data: { deleted_at: new Date() },
+  });
+}
+
+async function ensureActiveRating(id: number): Promise<void> {
+  const rating = await prisma.rating.findFirst({
+    where: { id, deleted_at: null },
+    select: { id: true },
+  });
+
+  if (!rating) {
+    throw new HttpError(404, 'RATING_NOT_FOUND', 'Note introuvable');
+  }
+}
+
+async function ensureActiveUser(id: number): Promise<void> {
+  const user = await prisma.user.findFirst({
+    where: { id, deleted_at: null },
+    select: { id: true },
+  });
+
+  if (!user) {
+    throw new HttpError(404, 'USER_NOT_FOUND', 'Utilisateur introuvable');
+  }
+}
+
+async function ensureActiveBeer(id: number): Promise<void> {
+  const beer = await prisma.beer.findFirst({
+    where: { id, deleted_at: null },
+    select: { id: true },
+  });
+
+  if (!beer) {
+    throw new HttpError(404, 'BEER_NOT_FOUND', 'Biere introuvable');
+  }
+}
