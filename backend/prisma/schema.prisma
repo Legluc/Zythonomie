@@ -42,6 +42,7 @@ model User {
   adress    String   @db.VarChar(255)
   icon      String?  @db.VarChar(255)
   role      Role     @default(USER)
+  deleted_at DateTime?
 
   ratings          Rating[]
   recommendedBeers BeerRecommendedUser[]
