@@ -7,6 +7,7 @@ import beerRoutes from './routes/beer.routes';
 import ratingRoutes from './routes/rating.routes';
 import quizRoutes from './routes/quiz.routes';
 import quizzSessionRoutes from './routes/quizz-session.routes';
+import recommendationRoutes from './routes/recommendation.routes';
 import { notFoundHandler, errorHandler } from './middleware/error-handler';
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.use('/api/beers', beerRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/quizz-sessions', quizzSessionRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
