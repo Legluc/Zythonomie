@@ -69,14 +69,15 @@ model Brewery {
 }
 
 model Beer {
-  id                Int      @id @default(autoincrement())
-  name              String   @db.VarChar(50)
-  description       String   @db.Text
+  id                Int       @id @default(autoincrement())
+  name              String    @db.VarChar(50)
+  description       String    @db.Text
   alcool            Boolean
-  percentage_alcool Decimal  @db.Decimal(5, 2)
+  percentage_alcool Decimal   @db.Decimal(5, 2)
   EAN               Int
-  image             String   @db.VarChar(255)
-  created_at        DateTime @default(now())
+  image             String    @db.VarChar(255)
+  created_at        DateTime  @default(now())
+  deleted_at        DateTime?
 
   breweries      BeerByBrewery[]
   ratings        Rating[]

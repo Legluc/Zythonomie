@@ -12,7 +12,14 @@ export function validate(schema: ZodTypeAny, target: ValidationTarget = 'body') 
       throw new HttpError(400, 'VALIDATION_ERROR', 'Donnees invalides', parseResult.error.flatten());
     }
 
-    req[target] = parseResult.data;
+    if (target === 'query') {
+      Object.assign(req.query, parseResult.data as object);
+    } else if (target === 'params') {
+      Object.assign(req.params, parseResult.data as object);
+    } else {
+      req.body = parseResult.data;
+    }
+
     next();
   };
 }
