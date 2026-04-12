@@ -1,5 +1,8 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// =============================================================
+//  Zytho MVP — Prisma Schema
+//  Base de données : mysql
+//  ORM             : Prisma
+// =============================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -8,4 +11,294 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+//  ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum QuizzSessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+// ─────────────────────────────────────────────
+//  USER
+// ─────────────────────────────────────────────
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(50)
+  firstname String   @db.VarChar(50)
+  mail      String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  birthday  DateTime @db.Date
+  adress    String   @db.VarChar(255)
+  icon      String?  @db.VarChar(255)
+  role      Role     @default(USER)
+
+  ratings          Rating[]
+  recommendedBeers BeerRecommendedUser[]
+  criterias        UserCriteria[]
+  quizzSessions    QuizzSession[]
+
+  @@map("user")
+}
+
+// ─────────────────────────────────────────────
+//  BREWERY & BEER
+// ─────────────────────────────────────────────
+
+model Brewery {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(50)
+  description String   @db.Text
+  image       String   @db.VarChar(255)
+  origin_date DateTime
+
+  beers BeerByBrewery[]
+
+  @@map("brewery")
+}
+
+model Beer {
+  id                Int      @id @default(autoincrement())
+  name              String   @db.VarChar(50)
+  description       String   @db.Text
+  alcool            Boolean
+  percentage_alcool Decimal  @db.Decimal(5, 2)
+  EAN               Int
+  image             String   @db.VarChar(255)
+  created_at        DateTime @default(now())
+
+  breweries      BeerByBrewery[]
+  ratings        Rating[]
+  recommendedTo  BeerRecommendedUser[]
+  criterias      BeerCriteria[]
+  categories     BeerByCategory[]
+
+  @@map("beer")
+}
+
+// Table de liaison Beer <-> Brewery
+model BeerByBrewery {
+  id_brewery Int
+  id_beer    Int
+
+  brewery Brewery @relation(fields: [id_brewery], references: [id], onDelete: Cascade)
+  beer    Beer    @relation(fields: [id_beer], references: [id], onDelete: Cascade)
+
+  @@id([id_brewery, id_beer])
+  @@map("beer_by_brewery")
+}
+
+// ─────────────────────────────────────────────
+//  RATING
+// ─────────────────────────────────────────────
+
+model Rating {
+  id         Int      @id @default(autoincrement())
+  id_user    Int
+  id_beer    Int
+  content    String   @db.Text
+  rate       Int
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [id_user], references: [id], onDelete: Cascade)
+  beer Beer @relation(fields: [id_beer], references: [id], onDelete: Cascade)
+
+  @@map("rating")
+}
+
+// ─────────────────────────────────────────────
+//  RECOMMENDATION
+// ─────────────────────────────────────────────
+
+model BeerRecommendedUser {
+  id_user             Int
+  id_beer             Int
+  score_compatibility Decimal @db.Decimal(5, 2)
+
+  user User @relation(fields: [id_user], references: [id], onDelete: Cascade)
+  beer Beer @relation(fields: [id_beer], references: [id], onDelete: Cascade)
+
+  @@id([id_user, id_beer])
+  @@map("beer_recommended_user")
+}
+
+// ─────────────────────────────────────────────
+//  CRITERION
+// ─────────────────────────────────────────────
+
+model Criterion {
+  id          Int    @id @default(autoincrement())
+  name        String @db.VarChar(50)
+  description String @db.Text
+
+  userCriterias  UserCriteria[]
+  beerCriterias  BeerCriteria[]
+  quizzQuestions QuizzQuestion[]
+
+  @@map("criterion")
+}
+
+// Table de liaison User <-> Criterion (avec score)
+model UserCriteria {
+  id_user      Int
+  id_criterion Int
+  score        Decimal @db.Decimal(5, 2)
+
+  user      User      @relation(fields: [id_user], references: [id], onDelete: Cascade)
+  criterion Criterion @relation(fields: [id_criterion], references: [id], onDelete: Cascade)
+
+  @@id([id_user, id_criterion])
+  @@map("user_criterias")
+}
+
+// Table de liaison Beer <-> Criterion (avec score)
+model BeerCriteria {
+  id_criterion Int
+  id_beer      Int
+  score        Decimal @db.Decimal(5, 2)
+
+  criterion Criterion @relation(fields: [id_criterion], references: [id], onDelete: Cascade)
+  beer      Beer      @relation(fields: [id_beer], references: [id], onDelete: Cascade)
+
+  @@id([id_criterion, id_beer])
+  @@map("beer_criterias")
+}
+
+// ─────────────────────────────────────────────
+//  QUIZZ
+// ─────────────────────────────────────────────
+
+model Quizz {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(50)
+  description String   @db.Text
+  created_at  DateTime @default(now())
+
+  questions QuizzQuestion[]
+  sessions  QuizzSession[]
+
+  @@map("quizz")
+}
+
+model QuizzQuestion {
+  id           Int    @id @default(autoincrement())
+  id_criterion Int
+  id_quizz     Int
+  question     String @db.VarChar(150)
+
+  criterion Criterion      @relation(fields: [id_criterion], references: [id], onDelete: Restrict)
+  quizz     Quizz          @relation(fields: [id_quizz], references: [id], onDelete: Cascade)
+  choices   QuestionChoice[]
+
+  @@map("quizz_question")
+}
+
+model QuestionChoice {
+  id                Int    @id @default(autoincrement())
+  id_quizz_question Int
+  choice            String @db.VarChar(100)
+  note_value        Int
+
+  quizzQuestion QuizzQuestion @relation(fields: [id_quizz_question], references: [id], onDelete: Cascade)
+  answerUsers   AnswerUser[]
+
+  @@map("question_choice")
+}
+
+// ─────────────────────────────────────────────
+//  QUIZZ SESSION & RÉPONSES
+// ─────────────────────────────────────────────
+
+model QuizzSession {
+  id           Int                @id @default(autoincrement())
+  id_user      Int
+  id_quizz     Int
+  status       QuizzSessionStatus @default(IN_PROGRESS)
+  started_at   DateTime           @default(now())
+  completed_at DateTime?
+
+  user    User         @relation(fields: [id_user], references: [id], onDelete: Cascade)
+  quizz   Quizz        @relation(fields: [id_quizz], references: [id], onDelete: Restrict)
+  answers AnswerUser[]
+
+  @@map("quizz_session")
+}
+
+model AnswerUser {
+  id                 Int      @id @default(autoincrement())
+  id_quizz_session   Int
+  id_question_choice Int
+  answered_at        DateTime @default(now())
+
+  quizzSession   QuizzSession   @relation(fields: [id_quizz_session], references: [id], onDelete: Cascade)
+  questionChoice QuestionChoice @relation(fields: [id_question_choice], references: [id], onDelete: Restrict)
+
+  @@map("answer_user")
+}
+
+// ─────────────────────────────────────────────
+//  CATEGORY (auto-référence pour hiérarchie)
+// ─────────────────────────────────────────────
+
+model Category {
+  id                 Int     @id @default(autoincrement())
+  id_parent_category Int?
+  name               String  @db.VarChar(50)
+  description        String  @db.Text
+
+  parentCategory Category?  @relation("CategoryHierarchy", fields: [id_parent_category], references: [id])
+  subCategories  Category[] @relation("CategoryHierarchy")
+
+  beers    BeerByCategory[]
+  pairings PairingByCategory[]
+
+  @@map("category")
+}
+
+// Table de liaison Beer <-> Category
+model BeerByCategory {
+  id_beer     Int
+  id_category Int
+
+  beer     Beer     @relation(fields: [id_beer], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [id_category], references: [id], onDelete: Cascade)
+
+  @@id([id_beer, id_category])
+  @@map("beer_by_category")
+}
+
+// ─────────────────────────────────────────────
+//  PAIRING
+// ─────────────────────────────────────────────
+
+model Pairing {
+  id          Int    @id @default(autoincrement())
+  name        String @db.VarChar(50)
+  description String @db.Text
+
+  categories PairingByCategory[]
+
+  @@map("pairing")
+}
+
+// Table de liaison Pairing <-> Category
+model PairingByCategory {
+  id_pairing  Int
+  id_category Int
+
+  pairing  Pairing  @relation(fields: [id_pairing], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [id_category], references: [id], onDelete: Cascade)
+
+  @@id([id_pairing, id_category])
+  @@map("pairing_by_category")
 }

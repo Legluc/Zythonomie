@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "prisma db seed"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,7 @@
     "express": "^5.2.1"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
@@ -29,5 +31,8 @@
     "prisma": "^6.19.3",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.2"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }
