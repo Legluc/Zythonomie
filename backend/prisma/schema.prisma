@@ -111,6 +111,7 @@ model Rating {
   content    String   @db.Text
   rate       Int
   created_at DateTime @default(now())
+  deleted_at DateTime?
 
   user User @relation(fields: [id_user], references: [id], onDelete: Cascade)
   beer Beer @relation(fields: [id_beer], references: [id], onDelete: Cascade)
