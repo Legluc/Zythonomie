@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import { sendSuccess } from '../lib/response';
 import {
+  addCategoryToPairing,
   createPairing,
   deletePairing,
   findAllPairings,
   findPairingById,
+  removeCategoryFromPairing,
   updatePairing,
 } from '../services/pairing.service';
 
@@ -34,4 +36,19 @@ export async function deletePairingHandler(req: Request, res: Response): Promise
   const pairingId = Number(req.params.id);
   await deletePairing(pairingId);
   sendSuccess(res, 200, { id: pairingId, deleted: true });
+}
+
+// ─── Liaisons atomiques ───────────────────────────────────────────────────────
+
+export async function postPairingCategory(req: Request, res: Response): Promise<void> {
+  const id_pairing = Number(req.params.id);
+  const pairing = await addCategoryToPairing(id_pairing, req.body.id_category);
+  sendSuccess(res, 200, pairing);
+}
+
+export async function deletePairingCategory(req: Request, res: Response): Promise<void> {
+  const id_pairing = Number(req.params.id);
+  const id_category = Number(req.params.id_category);
+  const pairing = await removeCategoryFromPairing(id_pairing, id_category);
+  sendSuccess(res, 200, pairing);
 }

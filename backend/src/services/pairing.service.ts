@@ -149,3 +149,36 @@ function handlePrismaConstraintError(error: unknown, code: string, message: stri
     }
   }
 }
+
+// ─── Liaisons atomiques Category ──────────────────────────────────────────────
+
+export async function addCategoryToPairing(id_pairing: number, id_category: number): Promise<PairingPublic> {
+  await ensurePairingExists(id_pairing);
+  await ensureCategoriesExist([id_category]);
+
+  const existing = await prisma.pairingByCategory.findUnique({
+    where: { id_pairing_id_category: { id_pairing, id_category } },
+    select: { id_pairing: true },
+  });
+  if (existing) {
+    throw new HttpError(409, 'LINK_ALREADY_EXISTS', 'Cette catégorie est déjà liée à ce pairing');
+  }
+
+  await prisma.pairingByCategory.create({ data: { id_pairing, id_category } });
+  return findPairingById(id_pairing);
+}
+
+export async function removeCategoryFromPairing(id_pairing: number, id_category: number): Promise<PairingPublic> {
+  await ensurePairingExists(id_pairing);
+
+  const existing = await prisma.pairingByCategory.findUnique({
+    where: { id_pairing_id_category: { id_pairing, id_category } },
+    select: { id_pairing: true },
+  });
+  if (!existing) {
+    throw new HttpError(404, 'LINK_NOT_FOUND', 'Cette catégorie n\'est pas liée à ce pairing');
+  }
+
+  await prisma.pairingByCategory.delete({ where: { id_pairing_id_category: { id_pairing, id_category } } });
+  return findPairingById(id_pairing);
+}

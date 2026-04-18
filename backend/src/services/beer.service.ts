@@ -185,3 +185,77 @@ async function ensureBeerExists(id: number): Promise<void> {
     throw new HttpError(404, 'BEER_NOT_FOUND', 'Bière introuvable');
   }
 }
+
+// ─── Liaisons atomiques Brewery ───────────────────────────────────────────────
+
+export async function addBreweryToBeer(id_beer: number, id_brewery: number): Promise<BeerPublic> {
+  await ensureBeerExists(id_beer);
+
+  const brewery = await prisma.brewery.findUnique({ where: { id: id_brewery }, select: { id: true } });
+  if (!brewery) {
+    throw new HttpError(404, 'BREWERY_NOT_FOUND', 'Brasserie introuvable');
+  }
+
+  const existing = await prisma.beerByBrewery.findUnique({
+    where: { id_brewery_id_beer: { id_brewery, id_beer } },
+    select: { id_beer: true },
+  });
+  if (existing) {
+    throw new HttpError(409, 'LINK_ALREADY_EXISTS', 'Cette brasserie est déjà liée à la bière');
+  }
+
+  await prisma.beerByBrewery.create({ data: { id_beer, id_brewery } });
+  return findBeerById(id_beer);
+}
+
+export async function removeBreweryFromBeer(id_beer: number, id_brewery: number): Promise<BeerPublic> {
+  await ensureBeerExists(id_beer);
+
+  const existing = await prisma.beerByBrewery.findUnique({
+    where: { id_brewery_id_beer: { id_brewery, id_beer } },
+    select: { id_beer: true },
+  });
+  if (!existing) {
+    throw new HttpError(404, 'LINK_NOT_FOUND', 'Cette brasserie n\'est pas liée à la bière');
+  }
+
+  await prisma.beerByBrewery.delete({ where: { id_brewery_id_beer: { id_brewery, id_beer } } });
+  return findBeerById(id_beer);
+}
+
+// ─── Liaisons atomiques Category ──────────────────────────────────────────────
+
+export async function addCategoryToBeer(id_beer: number, id_category: number): Promise<BeerPublic> {
+  await ensureBeerExists(id_beer);
+
+  const category = await prisma.category.findUnique({ where: { id: id_category }, select: { id: true } });
+  if (!category) {
+    throw new HttpError(404, 'CATEGORY_NOT_FOUND', 'Catégorie introuvable');
+  }
+
+  const existing = await prisma.beerByCategory.findUnique({
+    where: { id_beer_id_category: { id_beer, id_category } },
+    select: { id_beer: true },
+  });
+  if (existing) {
+    throw new HttpError(409, 'LINK_ALREADY_EXISTS', 'Cette catégorie est déjà liée à la bière');
+  }
+
+  await prisma.beerByCategory.create({ data: { id_beer, id_category } });
+  return findBeerById(id_beer);
+}
+
+export async function removeCategoryFromBeer(id_beer: number, id_category: number): Promise<BeerPublic> {
+  await ensureBeerExists(id_beer);
+
+  const existing = await prisma.beerByCategory.findUnique({
+    where: { id_beer_id_category: { id_beer, id_category } },
+    select: { id_beer: true },
+  });
+  if (!existing) {
+    throw new HttpError(404, 'LINK_NOT_FOUND', 'Cette catégorie n\'est pas liée à la bière');
+  }
+
+  await prisma.beerByCategory.delete({ where: { id_beer_id_category: { id_beer, id_category } } });
+  return findBeerById(id_beer);
+}
