@@ -11,6 +11,11 @@ import recommendationRoutes from './routes/recommendation.routes';
 import breweryRoutes from './routes/brewery.routes';
 import categoryRoutes from './routes/category.routes';
 import pairingRoutes from './routes/pairing.routes';
+import criterionRoutes from './routes/criterion.routes';
+import userCriteriaRoutes from './routes/user-criteria.routes';
+import beerCriteriaRoutes from './routes/beer-criteria.routes';
+import quizzQuestionRoutes from './routes/quizz-question.routes';
+import questionChoiceRoutes from './routes/question-choice.routes';
 import { notFoundHandler, errorHandler } from './middleware/error-handler';
 
 dotenv.config();
@@ -32,6 +37,11 @@ app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/breweries', breweryRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/pairings', pairingRoutes);
+app.use('/api/criteria', criterionRoutes);
+app.use('/api/user-criteria', userCriteriaRoutes);
+app.use('/api/beer-criteria', beerCriteriaRoutes);
+app.use('/api/quizz-questions', quizzQuestionRoutes);
+app.use('/api/question-choices', questionChoiceRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

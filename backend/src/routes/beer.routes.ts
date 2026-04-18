@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
-import { deleteBeer, getBeerById, getBeers, postBeer, putBeer } from '../controllers/beer.controller';
+import { deleteBeer, getBeerById, getBeers, postBeer, putBeer,
+  postBeerBrewery, deleteBeerBrewery, postBeerCategory, deleteBeerCategory,
+} from '../controllers/beer.controller';
 
 const router = Router();
 
@@ -50,5 +52,17 @@ router.get('/:id', validate(idParamsSchema, 'params'), getBeerById);
 router.post('/', validate(beerCreateSchema), postBeer);
 router.put('/:id', validate(idParamsSchema, 'params'), validate(beerUpdateSchema), putBeer);
 router.delete('/:id', validate(idParamsSchema, 'params'), deleteBeer);
+
+// ─── Liaisons atomiques ───────────────────────────────────────────────────────
+
+const breweryLinkSchema = z.object({ id_brewery: z.number().int().positive() });
+const categoryLinkSchema = z.object({ id_category: z.number().int().positive() });
+const breweryParamSchema = z.object({ id: z.coerce.number().int().positive(), id_brewery: z.coerce.number().int().positive() });
+const categoryParamSchema = z.object({ id: z.coerce.number().int().positive(), id_category: z.coerce.number().int().positive() });
+
+router.post('/:id/breweries', validate(idParamsSchema, 'params'), validate(breweryLinkSchema), postBeerBrewery);
+router.delete('/:id/breweries/:id_brewery', validate(breweryParamSchema, 'params'), deleteBeerBrewery);
+router.post('/:id/categories', validate(idParamsSchema, 'params'), validate(categoryLinkSchema), postBeerCategory);
+router.delete('/:id/categories/:id_category', validate(categoryParamSchema, 'params'), deleteBeerCategory);
 
 export default router;

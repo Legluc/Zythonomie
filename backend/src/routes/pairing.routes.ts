@@ -7,6 +7,8 @@ import {
   getPairings,
   postPairing,
   putPairing,
+  postPairingCategory,
+  deletePairingCategory,
 } from '../controllers/pairing.controller';
 
 const router = Router();
@@ -36,5 +38,16 @@ router.get('/:id', validate(idParamsSchema, 'params'), getPairingById);
 router.post('/', validate(pairingCreateSchema), postPairing);
 router.put('/:id', validate(idParamsSchema, 'params'), validate(pairingUpdateSchema), putPairing);
 router.delete('/:id', validate(idParamsSchema, 'params'), deletePairingHandler);
+
+// ─── Liaisons atomiques ───────────────────────────────────────────────────────
+
+const categoryLinkSchema = z.object({ id_category: z.number().int().positive() });
+const categoryParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  id_category: z.coerce.number().int().positive(),
+});
+
+router.post('/:id/categories', validate(idParamsSchema, 'params'), validate(categoryLinkSchema), postPairingCategory);
+router.delete('/:id/categories/:id_category', validate(categoryParamSchema, 'params'), deletePairingCategory);
 
 export default router;
