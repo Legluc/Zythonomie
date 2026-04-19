@@ -90,7 +90,7 @@ export async function refreshRecommendationsForUser(userId: number, limit = 10):
 
   const scored = beers
     .map((beer) => {
-      let totalAbsDiff = 0;
+      let dotProduct = 0;
       let overlapCount = 0;
 
       for (const beerCriterion of beer.criterias) {
@@ -99,7 +99,7 @@ export async function refreshRecommendationsForUser(userId: number, limit = 10):
           continue;
         }
 
-        totalAbsDiff += Math.abs(userScore - beerCriterion.score.toNumber());
+        dotProduct += userScore * beerCriterion.score.toNumber();
         overlapCount += 1;
       }
 
@@ -107,8 +107,7 @@ export async function refreshRecommendationsForUser(userId: number, limit = 10):
         return null;
       }
 
-      const avgAbsDiff = totalAbsDiff / overlapCount;
-      const normalizedScore = Math.max(0, 1 - avgAbsDiff / 5);
+      const normalizedScore = dotProduct / overlapCount;
 
       return {
         id_user: userId,

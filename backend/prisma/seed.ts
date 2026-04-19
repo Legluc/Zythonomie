@@ -513,9 +513,7 @@ async function main(): Promise<void> {
   }
 
   for (const beer of beers) {
-    const selected = pickUniqueIndices(QUIZ_QUESTIONS.length, 10);
-    for (const index of selected) {
-      const question = QUIZ_QUESTIONS[index];
+    for (const question of QUIZ_QUESTIONS) {
       const criterionId = criteriaByKey.get(question.key);
       if (!criterionId) continue;
       await prisma.beerCriteria.create({
