@@ -74,7 +74,7 @@
 - Middleware `error-handler` — capture sync/async + format ApiResponse
 - Middleware `require-admin` — **stub** (lit `X-User-Role` header, à remplacer en Phase 3)
 - Prisma select explicite — jamais `*`, jamais `password` exposé
-- Seed complet — 5 users, 8 bières, 27 critères, quiz avec questions/choix, sessions
+- Seed complet — 5 users, 8 bières, 25 critères, quiz avec questions/choix, sessions
 
 ### ❌ Manquant
 
@@ -198,10 +198,10 @@ GET    /api/recommendations/user/:userId        → résultats triés DESC
 
 #### 1.4 Vérification du seed
 
-- Les 27 critères sont bien en DB
+- Les 25 critères sont bien en DB
 - Chaque bière a des `BeerCriteria` pour tous les critères
 - Au moins 2 users ont des `UserCriteria` (sessions COMPLETED dans le seed)
-- Le quiz contient les 27 questions avec choix et `note_value`
+- Le quiz contient les 25 questions avec choix et `note_value`
 
 **✅ Definition of Done Phase 1** :
 - [ ] Algo modifié et compilé sans erreur
