@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { authenticate } from '../middleware/authenticate';
 import {
   deleteRating,
   getRatingsByBeer,
@@ -39,10 +40,11 @@ const updateRatingSchema = z
     message: 'Au moins un champ est requis pour la mise a jour',
   });
 
-router.get('/beer/:beerId', validate(beerIdSchema, 'params'), getRatingsByBeer);
-router.get('/user/:userId', validate(userIdSchema, 'params'), getRatingsByUser);
-router.post('/', validate(createRatingSchema), postRating);
-router.put('/:id', validate(idSchema, 'params'), validate(updateRatingSchema), putRating);
-router.delete('/:id', validate(idSchema, 'params'), deleteRating);
+router.get('/beer/:beerId', authenticate, validate(beerIdSchema, 'params'), getRatingsByBeer);
+router.get('/user/:userId', authenticate, validate(userIdSchema, 'params'), getRatingsByUser);
+router.post('/', authenticate, validate(createRatingSchema), postRating);
+// Propriétaire ou admin : la vérification se fait dans le service via req.user
+router.put('/:id', authenticate, validate(idSchema, 'params'), validate(updateRatingSchema), putRating);
+router.delete('/:id', authenticate, validate(idSchema, 'params'), deleteRating);
 
 export default router;

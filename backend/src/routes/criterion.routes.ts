@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { authenticate } from '../middleware/authenticate';
 import { requireAdmin } from '../middleware/require-admin';
 import {
   deleteCriterionHandler,
@@ -30,13 +31,13 @@ const criterionUpdateSchema = z
     message: 'Au moins un champ est requis pour la mise à jour',
   });
 
-// Lecture publique
-router.get('/', getCriteria);
-router.get('/:id', validate(idParamsSchema, 'params'), getCriterionById);
+// Lecture : utilisateur authentifié
+router.get('/', authenticate, getCriteria);
+router.get('/:id', authenticate, validate(idParamsSchema, 'params'), getCriterionById);
 
 // Mutations réservées aux admins
-router.post('/', requireAdmin, validate(criterionCreateSchema), postCriterion);
-router.patch('/:id', requireAdmin, validate(idParamsSchema, 'params'), validate(criterionUpdateSchema), patchCriterion);
-router.delete('/:id', requireAdmin, validate(idParamsSchema, 'params'), deleteCriterionHandler);
+router.post('/', authenticate, requireAdmin, validate(criterionCreateSchema), postCriterion);
+router.patch('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), validate(criterionUpdateSchema), patchCriterion);
+router.delete('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), deleteCriterionHandler);
 
 export default router;
