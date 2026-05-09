@@ -1,6 +1,7 @@
 import { Prisma, QuizzSessionStatus } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
+import { paginate, PaginatedResult } from '../lib/paginate';
 
 const sessionSelect = {
   id: true,
@@ -17,6 +18,15 @@ export interface SessionProgress {
   session: QuizzSessionPublic;
   answered_count: number;
   total_questions: number;
+}
+
+export async function findAllSessions(page = 1, limit = 20): Promise<PaginatedResult<QuizzSessionPublic>> {
+  return paginate<QuizzSessionPublic>(
+    prisma.quizzSession as any,
+    { where: {}, select: sessionSelect, orderBy: { started_at: 'desc' } },
+    page,
+    limit,
+  );
 }
 
 export async function startSession(id_user: number, id_quizz: number): Promise<SessionProgress> {

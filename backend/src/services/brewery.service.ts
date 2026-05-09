@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
+import { paginate, PaginatedResult } from '../lib/paginate';
 
 const brewerySelect = {
   id: true,
@@ -37,11 +38,13 @@ export interface UpdateBreweryInput {
   origin_date?: Date;
 }
 
-export async function findAllBreweries(): Promise<BreweryPublic[]> {
-  return prisma.brewery.findMany({
-    select: brewerySelect,
-    orderBy: { name: 'asc' },
-  });
+export async function findAllBreweries(page = 1, limit = 20): Promise<PaginatedResult<BreweryPublic>> {
+  return paginate<BreweryPublic>(
+    prisma.brewery as any,
+    { where: {}, select: brewerySelect, orderBy: { name: 'asc' } },
+    page,
+    limit,
+  );
 }
 
 export async function findBreweryById(id: number): Promise<BreweryPublic> {

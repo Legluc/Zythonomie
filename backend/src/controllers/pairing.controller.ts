@@ -10,9 +10,11 @@ import {
   updatePairing,
 } from '../services/pairing.service';
 
-export async function getPairings(_req: Request, res: Response): Promise<void> {
-  const pairings = await findAllPairings();
-  sendSuccess(res, 200, pairings);
+export async function getPairings(req: Request, res: Response): Promise<void> {
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 20;
+  const result = await findAllPairings(page, limit);
+  sendSuccess(res, 200, result);
 }
 
 export async function getPairingById(req: Request, res: Response): Promise<void> {

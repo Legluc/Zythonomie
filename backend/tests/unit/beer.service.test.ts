@@ -17,8 +17,8 @@ describe('beer.service', () => {
     await withTestTransaction(async () => {
       await createTestBeer({ name: 'TestBeerAll' });
       const beers = await findAllBeers();
-      expect(beers.length).toBeGreaterThan(0);
-      expect(beers.some((b) => b.name === 'TestBeerAll')).toBe(true);
+      expect(beers.data.length).toBeGreaterThan(0);
+      expect(beers.data.some((b) => b.name === 'TestBeerAll')).toBe(true);
     });
   });
 
@@ -30,9 +30,9 @@ describe('beer.service', () => {
       const withAlcool = await findAllBeers({ alcool: true });
       const withoutAlcool = await findAllBeers({ alcool: false });
 
-      expect(withAlcool.some((b) => b.name === 'WithAlcool')).toBe(true);
-      expect(withAlcool.some((b) => b.name === 'WithoutAlcool')).toBe(false);
-      expect(withoutAlcool.some((b) => b.name === 'WithoutAlcool')).toBe(true);
+      expect(withAlcool.data.some((b) => b.name === 'WithAlcool')).toBe(true);
+      expect(withAlcool.data.some((b) => b.name === 'WithoutAlcool')).toBe(false);
+      expect(withoutAlcool.data.some((b) => b.name === 'WithoutAlcool')).toBe(true);
     });
   });
 

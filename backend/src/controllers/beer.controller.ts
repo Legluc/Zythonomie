@@ -26,8 +26,11 @@ export async function getBeers(req: Request, res: Response): Promise<void> {
     filters.categoryId = Number(req.query.categoryId);
   }
 
-  const beers = await findAllBeers(filters);
-  sendSuccess(res, 200, beers);
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 20;
+
+  const result = await findAllBeers(filters, page, limit);
+  sendSuccess(res, 200, result);
 }
 
 export async function getBeerById(req: Request, res: Response): Promise<void> {

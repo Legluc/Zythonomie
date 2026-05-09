@@ -25,7 +25,7 @@ describe('recommendation.service', () => {
 
       // Expected: (4*3 + 2*5) / 2 = 22 / 2 = 11
       const recs = await refreshRecommendationsForUser(user.id);
-      const rec = recs.find((r) => r.id_beer === beer.id);
+      const rec = recs.data.find((r) => r.id_beer === beer.id);
       expect(rec).toBeDefined();
       expect(Number(rec!.score_compatibility)).toBeCloseTo(11);
     });
@@ -43,7 +43,7 @@ describe('recommendation.service', () => {
 
       // Expected: (5*3) / 1 = 15
       const recs = await refreshRecommendationsForUser(user.id);
-      const rec = recs.find((r) => r.id_beer === beer.id);
+      const rec = recs.data.find((r) => r.id_beer === beer.id);
       expect(rec).toBeDefined();
       expect(Number(rec!.score_compatibility)).toBeCloseTo(15);
     });
@@ -67,7 +67,7 @@ describe('recommendation.service', () => {
       await prisma.beerCriteria.create({ data: { id_beer: beer2.id, id_criterion: c2.id, score: 5 } });
 
       const recs = await refreshRecommendationsForUser(user.id);
-      const beerIds = recs.map((r) => r.id_beer);
+      const beerIds = recs.data.map((r) => r.id_beer);
       expect(beerIds).toContain(beer1.id);
       expect(beerIds).not.toContain(beer2.id);
     });
@@ -87,7 +87,7 @@ describe('recommendation.service', () => {
       await prisma.beer.update({ where: { id: beer.id }, data: { deleted_at: new Date() } });
 
       const recs = await refreshRecommendationsForUser(user.id);
-      const beerIds = recs.map((r) => r.id_beer);
+      const beerIds = recs.data.map((r) => r.id_beer);
       expect(beerIds).not.toContain(beer.id);
     });
   });
@@ -96,7 +96,7 @@ describe('recommendation.service', () => {
     await withTestTransaction(async () => {
       const user = await createTestUser();
       const recs = await refreshRecommendationsForUser(user.id);
-      expect(recs).toEqual([]);
+      expect(recs.data).toEqual([]);
     });
   });
 
@@ -121,8 +121,8 @@ describe('recommendation.service', () => {
       await refreshRecommendationsForUser(user.id);
 
       const recs = await getRecommendationsForUser(user.id);
-      expect(recs.length).toBeGreaterThan(0);
-      const rec = recs.find((r) => r.id_beer === beer.id);
+      expect(recs.data.length).toBeGreaterThan(0);
+      const rec = recs.data.find((r) => r.id_beer === beer.id);
       expect(rec).toBeDefined();
     });
   });
@@ -139,8 +139,8 @@ describe('recommendation.service', () => {
       const first = await refreshRecommendationsForUser(user.id);
       const second = await refreshRecommendationsForUser(user.id);
 
-      const firstRec = first.find((r) => r.id_beer === beer.id);
-      const secondRec = second.find((r) => r.id_beer === beer.id);
+      const firstRec = first.data.find((r) => r.id_beer === beer.id);
+      const secondRec = second.data.find((r) => r.id_beer === beer.id);
       expect(firstRec).toBeDefined();
       expect(secondRec).toBeDefined();
       expect(Number(firstRec!.score_compatibility)).toBe(Number(secondRec!.score_compatibility));

@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
+import { paginate, PaginatedResult } from '../lib/paginate';
 
 export interface RecommendationItem {
   id_user: number;
@@ -15,43 +16,61 @@ export interface RecommendationItem {
   };
 }
 
-export async function getRecommendationsForUser(userId: number, limit = 10): Promise<RecommendationItem[]> {
+const recommendationSelect = {
+  id_user: true,
+  id_beer: true,
+  score_compatibility: true,
+  beer: {
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      alcool: true,
+      percentage_alcool: true,
+    },
+  },
+} as const;
+
+export async function getRecommendationsForUser(userId: number, page = 1, limit = 20): Promise<PaginatedResult<RecommendationItem>> {
   await ensureActiveUser(userId);
 
-  const items = await prisma.beerRecommendedUser.findMany({
-    where: {
-      id_user: userId,
-      beer: {
-        deleted_at: null,
-      },
-    },
-    select: {
-      id_user: true,
-      id_beer: true,
-      score_compatibility: true,
-      beer: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          alcool: true,
-          percentage_alcool: true,
-        },
-      },
-    },
-    orderBy: [{ score_compatibility: 'desc' }, { id_beer: 'asc' }],
-    take: limit,
+  // Auto-refresh si aucune recommandation n'a encore ete calculee
+  const existingCount = await prisma.beerRecommendedUser.count({
+    where: { id_user: userId },
   });
-
-  if (items.length > 0) {
-    return items;
+  if (existingCount === 0) {
+    await computeAndStoreRecommendations(userId);
   }
 
-  return refreshRecommendationsForUser(userId, limit);
+  return paginate<RecommendationItem>(
+    prisma.beerRecommendedUser as any,
+    {
+      where: { id_user: userId, beer: { deleted_at: null } },
+      select: recommendationSelect,
+      orderBy: [{ score_compatibility: 'desc' }, { id_beer: 'asc' }],
+    },
+    page,
+    limit,
+  );
 }
 
-export async function refreshRecommendationsForUser(userId: number, limit = 10): Promise<RecommendationItem[]> {
+export async function refreshRecommendationsForUser(userId: number, page = 1, limit = 20): Promise<PaginatedResult<RecommendationItem>> {
   await ensureActiveUser(userId);
+  await computeAndStoreRecommendations(userId);
+
+  return paginate<RecommendationItem>(
+    prisma.beerRecommendedUser as any,
+    {
+      where: { id_user: userId, beer: { deleted_at: null } },
+      select: recommendationSelect,
+      orderBy: [{ score_compatibility: 'desc' }, { id_beer: 'asc' }],
+    },
+    page,
+    limit,
+  );
+}
+
+async function computeAndStoreRecommendations(userId: number): Promise<void> {
 
   const userCriteria = await prisma.userCriteria.findMany({
     where: { id_user: userId },
@@ -63,7 +82,7 @@ export async function refreshRecommendationsForUser(userId: number, limit = 10):
 
   if (userCriteria.length === 0) {
     await prisma.beerRecommendedUser.deleteMany({ where: { id_user: userId } });
-    return [];
+    return;
   }
 
   const userMap = new Map<number, number>();
@@ -126,31 +145,6 @@ export async function refreshRecommendationsForUser(userId: number, limit = 10):
       }),
     ),
   ]);
-
-  return prisma.beerRecommendedUser.findMany({
-    where: {
-      id_user: userId,
-      beer: {
-        deleted_at: null,
-      },
-    },
-    select: {
-      id_user: true,
-      id_beer: true,
-      score_compatibility: true,
-      beer: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          alcool: true,
-          percentage_alcool: true,
-        },
-      },
-    },
-    orderBy: [{ score_compatibility: 'desc' }, { id_beer: 'asc' }],
-    take: limit,
-  });
 }
 
 async function ensureActiveUser(id: number): Promise<void> {

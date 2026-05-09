@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
+import { paginate, PaginatedResult } from '../lib/paginate';
 
 const ratingSelect = {
   id: true,
@@ -41,26 +42,22 @@ export interface UpdateRatingInput {
   rate?: number;
 }
 
-export async function findRatingsByBeer(beerId: number): Promise<RatingPublic[]> {
-  return prisma.rating.findMany({
-    where: {
-      id_beer: beerId,
-      deleted_at: null,
-    },
-    select: ratingSelect,
-    orderBy: { created_at: 'desc' },
-  });
+export async function findRatingsByBeer(beerId: number, page = 1, limit = 20): Promise<PaginatedResult<RatingPublic>> {
+  return paginate<RatingPublic>(
+    prisma.rating as any,
+    { where: { id_beer: beerId, deleted_at: null }, select: ratingSelect, orderBy: { created_at: 'desc' } },
+    page,
+    limit,
+  );
 }
 
-export async function findRatingsByUser(userId: number): Promise<RatingPublic[]> {
-  return prisma.rating.findMany({
-    where: {
-      id_user: userId,
-      deleted_at: null,
-    },
-    select: ratingSelect,
-    orderBy: { created_at: 'desc' },
-  });
+export async function findRatingsByUser(userId: number, page = 1, limit = 20): Promise<PaginatedResult<RatingPublic>> {
+  return paginate<RatingPublic>(
+    prisma.rating as any,
+    { where: { id_user: userId, deleted_at: null }, select: ratingSelect, orderBy: { created_at: 'desc' } },
+    page,
+    limit,
+  );
 }
 
 export async function createRating(input: CreateRatingInput): Promise<RatingPublic> {

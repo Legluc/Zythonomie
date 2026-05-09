@@ -23,8 +23,8 @@ describe('Beers Integration', () => {
         .set('Authorization', `Bearer ${userToken(USER_ID)}`);
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(Array.isArray(res.body.data)).toBe(true);
-      expect(res.body.data.some((b: any) => b.name === 'IntegGetBeer')).toBe(true);
+      expect(Array.isArray(res.body.data.data)).toBe(true);
+      expect(res.body.data.data.some((b: any) => b.name === 'IntegGetBeer')).toBe(true);
     });
   });
 
@@ -100,8 +100,8 @@ describe('Beers Integration', () => {
         .get('/api/beers?alcool=true')
         .set('Authorization', `Bearer ${userToken(USER_ID)}`);
       expect(res.status).toBe(200);
-      expect(res.body.data.some((b: any) => b.name === 'IntegAlcool')).toBe(true);
-      expect(res.body.data.some((b: any) => b.name === 'IntegNoAlcool')).toBe(false);
+      expect(res.body.data.data.some((b: any) => b.name === 'IntegAlcool')).toBe(true);
+      expect(res.body.data.data.some((b: any) => b.name === 'IntegNoAlcool')).toBe(false);
     });
   });
 

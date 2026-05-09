@@ -21,6 +21,13 @@ const beerFiltersSchema = z.object({
   categoryId: z.coerce.number().int().positive().optional(),
 });
 
+const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+const beerQuerySchema = beerFiltersSchema.merge(paginationSchema);
+
 const beerCreateSchema = z.object({
   name: z.string().trim().min(1).max(50),
   description: z.string().trim().min(1),
@@ -49,7 +56,7 @@ const beerUpdateSchema = z
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
-router.get('/', validate(beerFiltersSchema, 'query'), authenticate, getBeers);
+router.get('/', authenticate, validate(beerQuerySchema, 'query'), getBeers);
 router.get('/:id', validate(idParamsSchema, 'params'), authenticate, getBeerById);
 router.post('/', authenticate, requireAdmin, validate(beerCreateSchema), postBeer);
 router.put('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), validate(beerUpdateSchema), putBeer);

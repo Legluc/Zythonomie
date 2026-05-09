@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
+import { paginate, PaginatedResult } from '../lib/paginate';
 
 // ─── Select ───────────────────────────────────────────────────────────────────
 
@@ -73,7 +74,7 @@ export interface UpdateBeerInput {
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
-export async function findAllBeers(filters: BeerFilters = {}): Promise<BeerPublic[]> {
+export async function findAllBeers(filters: BeerFilters = {}, page = 1, limit = 20): Promise<PaginatedResult<BeerPublic>> {
   const where: Prisma.BeerWhereInput = { deleted_at: null };
 
   if (filters.alcool !== undefined) {
@@ -86,11 +87,7 @@ export async function findAllBeers(filters: BeerFilters = {}): Promise<BeerPubli
     where.categories = { some: { id_category: filters.categoryId } };
   }
 
-  return prisma.beer.findMany({
-    where,
-    select: beerSelect,
-    orderBy: { name: 'asc' },
-  });
+  return paginate<BeerPublic>(prisma.beer as any, { where, select: beerSelect, orderBy: { name: 'asc' } }, page, limit);
 }
 
 export async function findBeerById(id: number): Promise<BeerPublic> {

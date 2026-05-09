@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
+import { paginate, PaginatedResult } from '../lib/paginate';
 
 const questionChoiceSelect = {
   id: true,
@@ -36,13 +37,14 @@ async function ensureQuestionExists(id_quizz_question: number): Promise<void> {
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
-export async function findChoicesByQuestion(id_quizz_question: number): Promise<QuestionChoicePublic[]> {
+export async function findChoicesByQuestion(id_quizz_question: number, page = 1, limit = 20): Promise<PaginatedResult<QuestionChoicePublic>> {
   await ensureQuestionExists(id_quizz_question);
-  return prisma.questionChoice.findMany({
-    where: { id_quizz_question },
-    select: questionChoiceSelect,
-    orderBy: { id: 'asc' },
-  });
+  return paginate<QuestionChoicePublic>(
+    prisma.questionChoice as any,
+    { where: { id_quizz_question }, select: questionChoiceSelect, orderBy: { id: 'asc' } },
+    page,
+    limit,
+  );
 }
 
 export async function findQuestionChoiceById(id: number): Promise<QuestionChoicePublic> {

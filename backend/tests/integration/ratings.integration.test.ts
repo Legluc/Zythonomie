@@ -72,7 +72,7 @@ describe('Ratings Integration', () => {
       const getRes = await request(app)
         .get(`/api/ratings/beer/${beer.id}`)
         .set('Authorization', `Bearer ${userToken(user.id)}`);
-      expect(getRes.body.data.find((r: any) => r.id === ratingId)).toBeUndefined();
+      expect(getRes.body.data.data.find((r: any) => r.id === ratingId)).toBeUndefined();
     });
   });
 
@@ -90,8 +90,8 @@ describe('Ratings Integration', () => {
         .get(`/api/ratings/beer/${beer.id}`)
         .set('Authorization', `Bearer ${userToken(user.id)}`);
       expect(res.status).toBe(200);
-      expect(res.body.data.length).toBe(1);
-      expect(res.body.data[0].id_beer).toBe(beer.id);
+      expect(res.body.data.data.length).toBe(1);
+      expect(res.body.data.data[0].id_beer).toBe(beer.id);
     });
   });
 });

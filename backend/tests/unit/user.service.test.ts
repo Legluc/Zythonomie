@@ -14,8 +14,8 @@ describe('user.service', () => {
     await withTestTransaction(async () => {
       await createTestUser({ name: 'ActiveTestUser' });
       const users = await findAllUsers();
-      expect(users.length).toBeGreaterThan(0);
-      expect(users.some((u) => u.name === 'ActiveTestUser')).toBe(true);
+      expect(users.data.length).toBeGreaterThan(0);
+      expect(users.data.some((u) => u.name === 'ActiveTestUser')).toBe(true);
     });
   });
 

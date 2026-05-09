@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
+import { paginate, PaginatedResult } from '../lib/paginate';
 
 const categorySelect = {
   id: true,
@@ -39,18 +40,14 @@ export interface UpdateCategoryInput {
   id_parent_category?: number | null;
 }
 
-export async function findAllCategories(filters: CategoryFilters = {}): Promise<CategoryPublic[]> {
+export async function findAllCategories(filters: CategoryFilters = {}, page = 1, limit = 20): Promise<PaginatedResult<CategoryPublic>> {
   const where: Prisma.CategoryWhereInput = {};
 
   if (filters.parentCategoryId !== undefined) {
     where.id_parent_category = filters.parentCategoryId;
   }
 
-  return prisma.category.findMany({
-    where,
-    select: categorySelect,
-    orderBy: { name: 'asc' },
-  });
+  return paginate<CategoryPublic>(prisma.category as any, { where, select: categorySelect, orderBy: { name: 'asc' } }, page, limit);
 }
 
 export async function findCategoryById(id: number): Promise<CategoryPublic> {

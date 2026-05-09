@@ -40,8 +40,13 @@ const updateRatingSchema = z
     message: 'Au moins un champ est requis pour la mise a jour',
   });
 
-router.get('/beer/:beerId', authenticate, validate(beerIdSchema, 'params'), getRatingsByBeer);
-router.get('/user/:userId', authenticate, validate(userIdSchema, 'params'), getRatingsByUser);
+const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+router.get('/beer/:beerId', authenticate, validate(beerIdSchema, 'params'), validate(paginationSchema, 'query'), getRatingsByBeer);
+router.get('/user/:userId', authenticate, validate(userIdSchema, 'params'), validate(paginationSchema, 'query'), getRatingsByUser);
 router.post('/', authenticate, validate(createRatingSchema), postRating);
 // Propriétaire ou admin : la vérification se fait dans le service via req.user
 router.put('/:id', authenticate, validate(idSchema, 'params'), validate(updateRatingSchema), putRating);

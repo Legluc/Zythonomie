@@ -20,8 +20,11 @@ export async function getCategories(req: Request, res: Response): Promise<void> 
     }
   }
 
-  const categories = await findAllCategories(filters);
-  sendSuccess(res, 200, categories);
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 20;
+
+  const result = await findAllCategories(filters, page, limit);
+  sendSuccess(res, 200, result);
 }
 
 export async function getCategoryById(req: Request, res: Response): Promise<void> {
