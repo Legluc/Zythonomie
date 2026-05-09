@@ -237,94 +237,99 @@ async function resetDatabase(): Promise<void> {
 async function main(): Promise<void> {
   faker.seed(2026);
 
-  await resetDatabase();
+  // ─── Users (upsert par mail) ─────────────────────────────────────────────
+  const userDefs = [
+    {
+      name: "Admin",
+      firstname: "System",
+      mail: "admin@zythonomie.local",
+      password: "password123",
+      birthday: new Date("1990-01-10"),
+      adress: "1 Rue de la Brasserie, Lille",
+      role: Role.ADMIN,
+    },
+    {
+      name: "Martin",
+      firstname: "Luc",
+      mail: "luc.martin@zythonomie.local",
+      password: "password123",
+      birthday: new Date("1995-03-04"),
+      adress: "12 Avenue des Houblons, Lille",
+      role: Role.USER,
+    },
+    {
+      name: "Dupont",
+      firstname: "Camille",
+      mail: "camille.dupont@zythonomie.local",
+      password: "password123",
+      birthday: new Date("1998-06-18"),
+      adress: "8 Rue des Malteries, Paris",
+      role: Role.USER,
+    },
+    {
+      name: "Bernard",
+      firstname: "Nora",
+      mail: "nora.bernard@zythonomie.local",
+      password: "password123",
+      birthday: new Date("1992-09-12"),
+      adress: "31 Rue des Saveurs, Lyon",
+      role: Role.USER,
+    },
+    {
+      name: "Petit",
+      firstname: "Yanis",
+      mail: "yanis.petit@zythonomie.local",
+      password: "password123",
+      birthday: new Date("1996-12-02"),
+      adress: "5 Quai des Bieres, Nantes",
+      role: Role.USER,
+    },
+  ];
 
-  const users = await Promise.all([
-    prisma.user.create({
-      data: {
-        name: "Admin",
-        firstname: "System",
-        mail: "admin@zythonomie.local",
-        password: "password123",
-        birthday: new Date("1990-01-10"),
-        adress: "1 Rue de la Brasserie, Lille",
-        role: Role.ADMIN,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        name: "Martin",
-        firstname: "Luc",
-        mail: "luc.martin@zythonomie.local",
-        password: "password123",
-        birthday: new Date("1995-03-04"),
-        adress: "12 Avenue des Houblons, Lille",
-        role: Role.USER,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        name: "Dupont",
-        firstname: "Camille",
-        mail: "camille.dupont@zythonomie.local",
-        password: "password123",
-        birthday: new Date("1998-06-18"),
-        adress: "8 Rue des Malteries, Paris",
-        role: Role.USER,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        name: "Bernard",
-        firstname: "Nora",
-        mail: "nora.bernard@zythonomie.local",
-        password: "password123",
-        birthday: new Date("1992-09-12"),
-        adress: "31 Rue des Saveurs, Lyon",
-        role: Role.USER,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        name: "Petit",
-        firstname: "Yanis",
-        mail: "yanis.petit@zythonomie.local",
-        password: "password123",
-        birthday: new Date("1996-12-02"),
-        adress: "5 Quai des Bieres, Nantes",
-        role: Role.USER,
-      },
-    }),
-  ]);
+  const users = await Promise.all(
+    userDefs.map((u) =>
+      prisma.user.upsert({
+        where: { mail: u.mail },
+        update: {},
+        create: u,
+      }),
+    ),
+  );
 
-  const breweries = await Promise.all([
-    prisma.brewery.create({
-      data: {
-        name: "Brasserie du Nord",
-        description: "Brasserie artisanale orientee IPA et Pale Ale.",
-        image: "https://images.example.com/brewery/nord.jpg",
-        origin_date: new Date("2012-03-20"),
-      },
-    }),
-    prisma.brewery.create({
-      data: {
-        name: "Les Malts de Loire",
-        description: "Maison de brassage axee sur les recettes maltees.",
-        image: "https://images.example.com/brewery/loire.jpg",
-        origin_date: new Date("2008-11-14"),
-      },
-    }),
-    prisma.brewery.create({
-      data: {
-        name: "Atelier des Houblons",
-        description: "Brasserie experimentale aux aromes houblonnes.",
-        image: "https://images.example.com/brewery/houblons.jpg",
-        origin_date: new Date("2017-07-01"),
-      },
-    }),
-  ]);
+  // ─── Breweries (upsert par name) ────────────────────────────────────────
+  const breweryDefs = [
+    {
+      name: "Brasserie du Nord",
+      description: "Brasserie artisanale orientee IPA et Pale Ale.",
+      image: "https://images.example.com/brewery/nord.jpg",
+      origin_date: new Date("2012-03-20"),
+    },
+    {
+      name: "Les Malts de Loire",
+      description: "Maison de brassage axee sur les recettes maltees.",
+      image: "https://images.example.com/brewery/loire.jpg",
+      origin_date: new Date("2008-11-14"),
+    },
+    {
+      name: "Atelier des Houblons",
+      description: "Brasserie experimentale aux aromes houblonnes.",
+      image: "https://images.example.com/brewery/houblons.jpg",
+      origin_date: new Date("2017-07-01"),
+    },
+  ];
 
-  const beerData = [
+  const breweries = await Promise.all(
+    breweryDefs.map((b) =>
+      prisma.brewery.upsert({
+        where: { name: b.name },
+        update: {},
+        create: b,
+      }),
+    ),
+  );
+
+  // ─── Beers (upsert par EAN) ──────────────────────────────────────────────
+  const beerDefs = [
     {
       name: "Blonde des Dunes",
       description: "Blonde legere aux notes florales.",
@@ -391,9 +396,19 @@ async function main(): Promise<void> {
     },
   ];
 
-  const beers = await Promise.all(beerData.map((beer) => prisma.beer.create({ data: beer })));
+  const beers = await Promise.all(
+    beerDefs.map((b) =>
+      prisma.beer.upsert({
+        where: { EAN: b.EAN },
+        update: {},
+        create: b,
+      }),
+    ),
+  );
 
+  // ─── Beer-Brewery links (createMany + skipDuplicates) ────────────────────
   await prisma.beerByBrewery.createMany({
+    skipDuplicates: true,
     data: [
       { id_beer: beers[0].id, id_brewery: breweries[0].id },
       { id_beer: beers[1].id, id_brewery: breweries[0].id },
@@ -406,30 +421,36 @@ async function main(): Promise<void> {
     ],
   });
 
-  const categoryAles = await prisma.category.create({
-    data: {
-      name: "Ales",
-      description: "Famille principale des ales.",
-    },
+  // ─── Categories (upsert par name) ───────────────────────────────────────
+  const categoryAles = await prisma.category.upsert({
+    where: { name: "Ales" },
+    update: {},
+    create: { name: "Ales", description: "Famille principale des ales." },
   });
 
-  const categoryIpa = await prisma.category.create({
-    data: {
+  const categoryIpa = await prisma.category.upsert({
+    where: { name: "IPA" },
+    update: {},
+    create: {
       id_parent_category: categoryAles.id,
       name: "IPA",
       description: "India Pale Ale, aromatique et houblonnee.",
     },
   });
 
-  const categoryDark = await prisma.category.create({
-    data: {
+  const categoryDark = await prisma.category.upsert({
+    where: { name: "Brune et Stout" },
+    update: {},
+    create: {
       id_parent_category: categoryAles.id,
       name: "Brune et Stout",
       description: "Bieres torrefiees, malt ees et intenses.",
     },
   });
 
+  // ─── Beer-Category links ─────────────────────────────────────────────────
   await prisma.beerByCategory.createMany({
+    skipDuplicates: true,
     data: [
       { id_beer: beers[0].id, id_category: categoryAles.id },
       { id_beer: beers[1].id, id_category: categoryIpa.id },
@@ -442,15 +463,20 @@ async function main(): Promise<void> {
     ],
   });
 
+  // ─── Pairings (upsert par name) ──────────────────────────────────────────
   const pairings = await Promise.all([
-    prisma.pairing.create({
-      data: {
+    prisma.pairing.upsert({
+      where: { name: "Fromages affines" },
+      update: {},
+      create: {
         name: "Fromages affines",
         description: "Accords sur brunes, triples et ales de caractere.",
       },
     }),
-    prisma.pairing.create({
-      data: {
+    prisma.pairing.upsert({
+      where: { name: "Poissons et agrumes" },
+      update: {},
+      create: {
         name: "Poissons et agrumes",
         description: "Accords sur blanches et bi eres acidulees.",
       },
@@ -458,6 +484,7 @@ async function main(): Promise<void> {
   ]);
 
   await prisma.pairingByCategory.createMany({
+    skipDuplicates: true,
     data: [
       { id_pairing: pairings[0].id, id_category: categoryDark.id },
       { id_pairing: pairings[0].id, id_category: categoryAles.id },
@@ -466,91 +493,105 @@ async function main(): Promise<void> {
     ],
   });
 
-  for (let i = 0; i < 18; i += 1) {
+  // ─── Ratings (skip si deja present pour couple user-beer) ───────────────
+  const ratingContents = [
+    "Equilibree et facile a boire.",
+    "Bonne intensite aromatique.",
+    "Profil interessant mais un peu amer.",
+    "Finale propre, tres agreable.",
+    "Belle surprise sur la longueur.",
+  ];
+  faker.seed(2026);
+  const ratingPairs = new Set<string>();
+  const ratingAttempts = 40;
+  for (let i = 0; i < ratingAttempts && ratingPairs.size < 18; i += 1) {
     const user = faker.helpers.arrayElement(users);
     const beer = faker.helpers.arrayElement(beers);
-    await prisma.rating.create({
-      data: {
-        id_user: user.id,
-        id_beer: beer.id,
-        content: faker.helpers.arrayElement([
-          "Equilibree et facile a boire.",
-          "Bonne intensite aromatique.",
-          "Profil interessant mais un peu amer.",
-          "Finale propre, tres agreable.",
-          "Belle surprise sur la longueur.",
-        ]),
-        rate: faker.number.int({ min: 2, max: 5 }),
-      },
-    });
+    const key = `${user.id}-${beer.id}`;
+    if (ratingPairs.has(key)) continue;
+    ratingPairs.add(key);
+    const exists = await prisma.rating.findFirst({ where: { id_user: user.id, id_beer: beer.id } });
+    if (!exists) {
+      await prisma.rating.create({
+        data: {
+          id_user: user.id,
+          id_beer: beer.id,
+          content: faker.helpers.arrayElement(ratingContents),
+          rate: faker.number.int({ min: 2, max: 5 }),
+        },
+      });
+    }
   }
 
+  // ─── Criteria (upsert par name) ─────────────────────────────────────────
   const criteriaByKey = new Map<string, number>();
   for (const q of QUIZ_QUESTIONS) {
-    const created = await prisma.criterion.create({
-      data: {
-        name: q.criterionName,
-        description: `Critere quiz - ${q.group}`,
-      },
+    const criterion = await prisma.criterion.upsert({
+      where: { name: q.criterionName },
+      update: {},
+      create: { name: q.criterionName, description: `Critere quiz - ${q.group}` },
     });
-    criteriaByKey.set(q.key, created.id);
+    criteriaByKey.set(q.key, criterion.id);
   }
 
+  // ─── UserCriteria (upsert par id_user + id_criterion) ───────────────────
+  faker.seed(2026);
   for (const user of users) {
     const selected = pickUniqueIndices(QUIZ_QUESTIONS.length, 8);
     for (const index of selected) {
       const question = QUIZ_QUESTIONS[index];
       const criterionId = criteriaByKey.get(question.key);
       if (!criterionId) continue;
-      await prisma.userCriteria.create({
-        data: {
-          id_user: user.id,
-          id_criterion: criterionId,
-          score: randomScore(),
-        },
+      await prisma.userCriteria.upsert({
+        where: { id_user_id_criterion: { id_user: user.id, id_criterion: criterionId } },
+        update: {},
+        create: { id_user: user.id, id_criterion: criterionId, score: randomScore() },
       });
     }
   }
 
+  // ─── BeerCriteria (upsert par id_beer + id_criterion) ───────────────────
   for (const beer of beers) {
     for (const question of QUIZ_QUESTIONS) {
       const criterionId = criteriaByKey.get(question.key);
       if (!criterionId) continue;
-      await prisma.beerCriteria.create({
-        data: {
-          id_beer: beer.id,
-          id_criterion: criterionId,
-          score: randomScore(),
-        },
+      await prisma.beerCriteria.upsert({
+        where: { id_beer_id_criterion: { id_beer: beer.id, id_criterion: criterionId } },
+        update: {},
+        create: { id_beer: beer.id, id_criterion: criterionId, score: randomScore() },
       });
     }
   }
 
+  // ─── Recommendations (upsert par id_user + id_beer) ────────────────────
+  faker.seed(2026);
   const recommendationPairs = new Set<string>();
-  while (recommendationPairs.size < 10) {
+  let attempts = 0;
+  while (recommendationPairs.size < 10 && attempts < 100) {
+    attempts += 1;
     const user = faker.helpers.arrayElement(users);
     const beer = faker.helpers.arrayElement(beers);
     const key = `${user.id}-${beer.id}`;
-    if (recommendationPairs.has(key)) {
-      continue;
-    }
+    if (recommendationPairs.has(key)) continue;
     recommendationPairs.add(key);
-    await prisma.beerRecommendedUser.create({
-      data: {
-        id_user: user.id,
-        id_beer: beer.id,
-        score_compatibility: randomScore(),
-      },
+    await prisma.beerRecommendedUser.upsert({
+      where: { id_user_id_beer: { id_user: user.id, id_beer: beer.id } },
+      update: {},
+      create: { id_user: user.id, id_beer: beer.id, score_compatibility: randomScore() },
     });
   }
 
-  const quiz = await prisma.quizz.create({
-    data: {
+  // ─── Quiz (upsert par name) ──────────────────────────────────────────────
+  const quiz = await prisma.quizz.upsert({
+    where: { name: "Quiz Preference Bieres" },
+    update: {},
+    create: {
       name: "Quiz Preference Bieres",
       description: "Questionnaire sensoriel pour recommander des bieres.",
     },
   });
 
+  // ─── QuizzQuestions + QuestionChoices (idempotent par criterion+quiz) ───
   const questionChoiceMap = new Map<number, number[]>();
   const orderedQuestionIds: number[] = [];
 
@@ -558,166 +599,109 @@ async function main(): Promise<void> {
     const criterionId = criteriaByKey.get(question.key);
     if (!criterionId) continue;
 
-    const createdQuestion = await prisma.quizzQuestion.create({
-      data: {
-        id_criterion: criterionId,
-        id_quizz: quiz.id,
-        question: question.question,
-      },
+    let createdQuestion = await prisma.quizzQuestion.findFirst({
+      where: { id_criterion: criterionId, id_quizz: quiz.id },
+      select: { id: true },
     });
+    if (!createdQuestion) {
+      createdQuestion = await prisma.quizzQuestion.create({
+        data: { id_criterion: criterionId, id_quizz: quiz.id, question: question.question },
+        select: { id: true },
+      });
+    }
 
     orderedQuestionIds.push(createdQuestion.id);
 
-    let createdChoices: { id: number }[] = [];
+    const existingChoices = await prisma.questionChoice.findMany({
+      where: { id_quizz_question: createdQuestion.id },
+      select: { id: true },
+    });
+
+    if (existingChoices.length > 0) {
+      questionChoiceMap.set(createdQuestion.id, existingChoices.map((c) => c.id));
+      continue;
+    }
+
+    let newChoices: { id: number }[] = [];
     if (question.type === "rapport") {
-      createdChoices = await Promise.all([
-        prisma.questionChoice.create({
-          data: {
-            id_quizz_question: createdQuestion.id,
-            choice: "0%",
-            note_value: 0,
-          },
-        }),
-        prisma.questionChoice.create({
-          data: {
-            id_quizz_question: createdQuestion.id,
-            choice: "inferieur a 1%",
-            note_value: 1,
-          },
-        }),
-        prisma.questionChoice.create({
-          data: {
-            id_quizz_question: createdQuestion.id,
-            choice: "avec alcool",
-            note_value: 2,
-          },
-        }),
+      newChoices = await Promise.all([
+        prisma.questionChoice.create({ data: { id_quizz_question: createdQuestion.id, choice: "0%", note_value: 0 } }),
+        prisma.questionChoice.create({ data: { id_quizz_question: createdQuestion.id, choice: "inferieur a 1%", note_value: 1 } }),
+        prisma.questionChoice.create({ data: { id_quizz_question: createdQuestion.id, choice: "avec alcool", note_value: 2 } }),
       ]);
     } else if (question.type === "degre") {
-      createdChoices = await Promise.all([
-        prisma.questionChoice.create({
-          data: {
-            id_quizz_question: createdQuestion.id,
-            choice: "Tous",
-            note_value: 3,
-          },
-        }),
-        prisma.questionChoice.create({
-          data: {
-            id_quizz_question: createdQuestion.id,
-            choice: "<5%",
-            note_value: 2,
-          },
-        }),
-        prisma.questionChoice.create({
-          data: {
-            id_quizz_question: createdQuestion.id,
-            choice: "5-7%",
-            note_value: 4,
-          },
-        }),
-        prisma.questionChoice.create({
-          data: {
-            id_quizz_question: createdQuestion.id,
-            choice: ">7%",
-            note_value: 5,
-          },
-        }),
+      newChoices = await Promise.all([
+        prisma.questionChoice.create({ data: { id_quizz_question: createdQuestion.id, choice: "Tous", note_value: 3 } }),
+        prisma.questionChoice.create({ data: { id_quizz_question: createdQuestion.id, choice: "<5%", note_value: 2 } }),
+        prisma.questionChoice.create({ data: { id_quizz_question: createdQuestion.id, choice: "5-7%", note_value: 4 } }),
+        prisma.questionChoice.create({ data: { id_quizz_question: createdQuestion.id, choice: ">7%", note_value: 5 } }),
       ]);
     } else {
-      createdChoices = await Promise.all(
+      newChoices = await Promise.all(
         SCALE_CHOICES.map((scaleChoice) =>
           prisma.questionChoice.create({
-            data: {
-              id_quizz_question: createdQuestion.id,
-              choice: scaleChoice.choice,
-              note_value: scaleChoice.note,
-            },
+            data: { id_quizz_question: createdQuestion.id, choice: scaleChoice.choice, note_value: scaleChoice.note },
           }),
         ),
       );
     }
+    questionChoiceMap.set(createdQuestion.id, newChoices.map((c) => c.id));
+  }
 
-    questionChoiceMap.set(
-      createdQuestion.id,
-      createdChoices.map((choice) => choice.id),
-    );
+  // ─── QuizzSessions (creer seulement si absentes pour cet user+quiz) ─────
+  async function ensureSession(userId: number, status: QuizzSessionStatus, startedAgo: number, duration: number | null) {
+    const existing = await prisma.quizzSession.findFirst({ where: { id_user: userId, id_quizz: quiz.id, status } });
+    if (existing) return existing;
+    return prisma.quizzSession.create({
+      data: {
+        id_user: userId,
+        id_quizz: quiz.id,
+        status,
+        started_at: new Date(Date.now() - startedAgo),
+        completed_at: duration !== null ? new Date(Date.now() - startedAgo + duration) : null,
+      },
+    });
   }
 
   const sessions = await Promise.all([
-    prisma.quizzSession.create({
-      data: {
-        id_user: users[1].id,
-        id_quizz: quiz.id,
-        status: QuizzSessionStatus.COMPLETED,
-        started_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        completed_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 25 * 60 * 1000),
-      },
-    }),
-    prisma.quizzSession.create({
-      data: {
-        id_user: users[2].id,
-        id_quizz: quiz.id,
-        status: QuizzSessionStatus.COMPLETED,
-        started_at: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        completed_at: new Date(Date.now() - 24 * 60 * 60 * 1000 + 20 * 60 * 1000),
-      },
-    }),
-    prisma.quizzSession.create({
-      data: {
-        id_user: users[3].id,
-        id_quizz: quiz.id,
-        status: QuizzSessionStatus.ABANDONED,
-        started_at: new Date(Date.now() - 12 * 60 * 60 * 1000),
-        completed_at: null,
-      },
-    }),
+    ensureSession(users[1].id, QuizzSessionStatus.COMPLETED, 2 * 24 * 60 * 60 * 1000, 25 * 60 * 1000),
+    ensureSession(users[2].id, QuizzSessionStatus.COMPLETED, 24 * 60 * 60 * 1000, 20 * 60 * 1000),
+    ensureSession(users[3].id, QuizzSessionStatus.ABANDONED, 12 * 60 * 60 * 1000, null),
   ]);
 
+  // ─── AnswerUser (findFirst + create si absent) ───────────────────────────
   for (const questionId of orderedQuestionIds) {
     const choices = questionChoiceMap.get(questionId);
     if (!choices || choices.length === 0) continue;
     const choiceId = faker.helpers.arrayElement(choices);
-    await prisma.answerUser.create({
-      data: {
-        id_quizz_session: sessions[0].id,
-        id_question_choice: choiceId,
-      },
-    });
+    const exists = await prisma.answerUser.findFirst({ where: { id_quizz_session: sessions[0].id, id_question_choice: choiceId } });
+    if (!exists) {
+      await prisma.answerUser.create({ data: { id_quizz_session: sessions[0].id, id_question_choice: choiceId } });
+    }
   }
 
   for (const questionId of orderedQuestionIds) {
     const choices = questionChoiceMap.get(questionId);
     if (!choices || choices.length === 0) continue;
     const choiceId = faker.helpers.arrayElement(choices);
-    await prisma.answerUser.create({
-      data: {
-        id_quizz_session: sessions[1].id,
-        id_question_choice: choiceId,
-      },
-    });
+    const exists = await prisma.answerUser.findFirst({ where: { id_quizz_session: sessions[1].id, id_question_choice: choiceId } });
+    if (!exists) {
+      await prisma.answerUser.create({ data: { id_quizz_session: sessions[1].id, id_question_choice: choiceId } });
+    }
   }
 
   for (const questionId of orderedQuestionIds.slice(0, 10)) {
     const choices = questionChoiceMap.get(questionId);
     if (!choices || choices.length === 0) continue;
     const choiceId = faker.helpers.arrayElement(choices);
-    await prisma.answerUser.create({
-      data: {
-        id_quizz_session: sessions[2].id,
-        id_question_choice: choiceId,
-      },
-    });
+    const exists = await prisma.answerUser.findFirst({ where: { id_quizz_session: sessions[2].id, id_question_choice: choiceId } });
+    if (!exists) {
+      await prisma.answerUser.create({ data: { id_quizz_session: sessions[2].id, id_question_choice: choiceId } });
+    }
   }
 
   const questionCount = await prisma.quizzQuestion.count({ where: { id_quizz: quiz.id } });
-  const choiceCount = await prisma.questionChoice.count({
-    where: {
-      quizzQuestion: {
-        id_quizz: quiz.id,
-      },
-    },
-  });
+  const choiceCount = await prisma.questionChoice.count({ where: { quizzQuestion: { id_quizz: quiz.id } } });
 
   console.log("Seed termine avec succes.");
   console.log(`Users: ${users.length}`);

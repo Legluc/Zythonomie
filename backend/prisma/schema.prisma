@@ -76,7 +76,7 @@ model User {
 
 model Brewery {
   id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(50)
+  name        String   @unique @db.VarChar(50)
   description String   @db.Text
   image       String   @db.VarChar(255)
   origin_date DateTime
@@ -92,7 +92,7 @@ model Beer {
   description       String    @db.Text
   alcool            Boolean
   percentage_alcool Decimal   @db.Decimal(5, 2)
-  EAN               Int
+  EAN               Int       @unique
   image             String    @db.VarChar(255)
   created_at        DateTime  @default(now())
   deleted_at        DateTime?
@@ -159,7 +159,7 @@ model BeerRecommendedUser {
 
 model Criterion {
   id          Int    @id @default(autoincrement())
-  name        String @db.VarChar(50)
+  name        String @unique @db.VarChar(50)
   description String @db.Text
 
   userCriterias  UserCriteria[]
@@ -201,7 +201,7 @@ model BeerCriteria {
 
 model Quizz {
   id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(50)
+  name        String   @unique @db.VarChar(50)
   description String   @db.Text
   created_at  DateTime @default(now())
 
@@ -274,7 +274,7 @@ model AnswerUser {
 model Category {
   id                 Int     @id @default(autoincrement())
   id_parent_category Int?
-  name               String  @db.VarChar(50)
+  name               String  @unique @db.VarChar(50)
   description        String  @db.Text
 
   parentCategory Category?  @relation("CategoryHierarchy", fields: [id_parent_category], references: [id])
@@ -304,7 +304,7 @@ model BeerByCategory {
 
 model Pairing {
   id          Int    @id @default(autoincrement())
-  name        String @db.VarChar(50)
+  name        String @unique @db.VarChar(50)
   description String @db.Text
 
   categories PairingByCategory[]

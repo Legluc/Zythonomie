@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import morgan from 'morgan';
 import healthRoutes from './routes/health.routes';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -23,7 +25,11 @@ dotenv.config();
 
 const app = express();
 
-// Middlewares
+// Middlewares de sécurité
+app.use(helmet());
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+
+// Middlewares standard
 app.use(cors());
 app.use(express.json());
 
