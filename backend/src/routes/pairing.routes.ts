@@ -19,6 +19,11 @@ const idParamsSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
+const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
 const pairingCreateSchema = z.object({
   name: z.string().trim().min(1).max(50),
   description: z.string().trim().min(1),
@@ -35,7 +40,7 @@ const pairingUpdateSchema = z
     message: 'Au moins un champ est requis pour la mise a jour',
   });
 
-router.get('/', authenticate, getPairings);
+router.get('/', authenticate, validate(paginationSchema, 'query'), getPairings);
 router.get('/:id', authenticate, validate(idParamsSchema, 'params'), getPairingById);
 router.post('/', authenticate, requireAdmin, validate(pairingCreateSchema), postPairing);
 router.put('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), validate(pairingUpdateSchema), putPairing);

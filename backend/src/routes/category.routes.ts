@@ -21,6 +21,13 @@ const categoryFiltersSchema = z.object({
   parentCategoryId: z.union([z.literal('null'), z.coerce.number().int().positive()]).optional(),
 });
 
+const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+const categoryQuerySchema = categoryFiltersSchema.merge(paginationSchema);
+
 const categoryCreateSchema = z.object({
   name: z.string().trim().min(1).max(50),
   description: z.string().trim().min(1),
@@ -37,7 +44,7 @@ const categoryUpdateSchema = z
     message: 'Au moins un champ est requis pour la mise a jour',
   });
 
-router.get('/', authenticate, validate(categoryFiltersSchema, 'query'), getCategories);
+router.get('/', authenticate, validate(categoryQuerySchema, 'query'), getCategories);
 router.get('/:id', authenticate, validate(idParamsSchema, 'params'), getCategoryById);
 router.post('/', authenticate, requireAdmin, validate(categoryCreateSchema), postCategory);
 router.put('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), validate(categoryUpdateSchema), putCategory);

@@ -49,8 +49,8 @@ describe('rating.service', () => {
       await createRating({ id_user: user.id, id_beer: beer.id, content: 'Good', rate: 4 });
 
       const ratings = await findRatingsByBeer(beer.id);
-      expect(ratings.length).toBe(1);
-      expect(ratings[0].id_beer).toBe(beer.id);
+      expect(ratings.data.length).toBe(1);
+      expect(ratings.data[0].id_beer).toBe(beer.id);
     });
   });
 
@@ -76,7 +76,7 @@ describe('rating.service', () => {
       await softDeleteRating(rating.id);
 
       const ratings = await findRatingsByBeer(beer.id);
-      expect(ratings.find((r) => r.id === rating.id)).toBeUndefined();
+      expect(ratings.data.find((r) => r.id === rating.id)).toBeUndefined();
     });
   });
 

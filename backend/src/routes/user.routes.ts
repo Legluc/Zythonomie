@@ -13,6 +13,11 @@ const idParamsSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
+const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
 const userCreateSchema = z.object({
   name: z.string().trim().min(1).max(50),
   firstname: z.string().trim().min(1).max(50),
@@ -39,7 +44,7 @@ const userUpdateSchema = z
     message: 'Au moins un champ est requis pour la mise a jour',
   });
 
-router.get('/', authenticate, requireAdmin, getUsers);
+router.get('/', authenticate, requireAdmin, validate(paginationSchema, 'query'), getUsers);
 router.get('/:id', authenticate, requireOwnerOrAdmin('id'), validate(idParamsSchema, 'params'), getUserById);
 // Création directe d'utilisateur réservée à l'admin (l'inscription publique passe par /api/auth/register)
 router.post('/', authenticate, requireAdmin, validate(userCreateSchema), postUser);

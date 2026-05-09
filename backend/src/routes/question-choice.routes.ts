@@ -21,6 +21,11 @@ const questionIdParamsSchema = z.object({
   id_quizz_question: z.coerce.number().int().positive(),
 });
 
+const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
 const createSchema = z.object({
   id_quizz_question: z.number().int().positive(),
   choice: z.string().trim().min(1).max(100),
@@ -41,6 +46,7 @@ router.get(
   '/by-question/:id_quizz_question',
   authenticate,
   validate(questionIdParamsSchema, 'params'),
+  validate(paginationSchema, 'query'),
   getChoicesByQuestion,
 );
 

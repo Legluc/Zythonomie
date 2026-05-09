@@ -10,8 +10,10 @@ import {
 
 export async function getChoicesByQuestion(req: Request, res: Response): Promise<void> {
   const id_quizz_question = Number(req.params.id_quizz_question);
-  const choices = await findChoicesByQuestion(id_quizz_question);
-  sendSuccess(res, 200, choices);
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 20;
+  const result = await findChoicesByQuestion(id_quizz_question, page, limit);
+  sendSuccess(res, 200, result);
 }
 
 export async function getQuestionChoiceById(req: Request, res: Response): Promise<void> {

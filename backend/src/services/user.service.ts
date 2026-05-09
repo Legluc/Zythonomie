@@ -2,6 +2,7 @@ import { Prisma, Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
+import { paginate, PaginatedResult } from '../lib/paginate';
 
 const userPublicSelect = {
   id: true,
@@ -39,12 +40,13 @@ export interface UpdateUserInput {
   role?: Role;
 }
 
-export async function findAllUsers(): Promise<UserPublic[]> {
-  return prisma.user.findMany({
-    where: { deleted_at: null },
-    select: userPublicSelect,
-    orderBy: { id: 'asc' },
-  });
+export async function findAllUsers(page = 1, limit = 20): Promise<PaginatedResult<UserPublic>> {
+  return paginate<UserPublic>(
+    prisma.user as any,
+    { where: { deleted_at: null }, select: userPublicSelect, orderBy: { id: 'asc' } },
+    page,
+    limit,
+  );
 }
 
 export async function findUserById(id: number): Promise<UserPublic> {

@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
+import { paginate, PaginatedResult } from '../lib/paginate';
 
 const pairingSelect = {
   id: true,
@@ -33,11 +34,13 @@ export interface UpdatePairingInput {
   category_ids?: number[];
 }
 
-export async function findAllPairings(): Promise<PairingPublic[]> {
-  return prisma.pairing.findMany({
-    select: pairingSelect,
-    orderBy: { name: 'asc' },
-  });
+export async function findAllPairings(page = 1, limit = 20): Promise<PaginatedResult<PairingPublic>> {
+  return paginate<PairingPublic>(
+    prisma.pairing as any,
+    { where: {}, select: pairingSelect, orderBy: { name: 'asc' } },
+    page,
+    limit,
+  );
 }
 
 export async function findPairingById(id: number): Promise<PairingPublic> {

@@ -69,18 +69,18 @@ describe('Recommendations Integration', () => {
         .set('Authorization', `Bearer ${token}`);
       expect(refreshRes.status).toBe(200);
       expect(refreshRes.body.success).toBe(true);
-      expect(refreshRes.body.data.length).toBeGreaterThan(0);
+      expect(refreshRes.body.data.data.length).toBeGreaterThan(0);
 
       // Step 5: Get recommendations
       const getRes = await request(app)
         .get(`/api/recommendations/user/${user.id}`)
         .set('Authorization', `Bearer ${token}`);
       expect(getRes.status).toBe(200);
-      expect(getRes.body.data.length).toBeGreaterThan(0);
+      expect(getRes.body.data.data.length).toBeGreaterThan(0);
 
       // Beer1 should score higher than Beer2
-      const beer1Rec = getRes.body.data.find((r: any) => r.id_beer === beer1.id);
-      const beer2Rec = getRes.body.data.find((r: any) => r.id_beer === beer2.id);
+      const beer1Rec = getRes.body.data.data.find((r: any) => r.id_beer === beer1.id);
+      const beer2Rec = getRes.body.data.data.find((r: any) => r.id_beer === beer2.id);
       expect(beer1Rec).toBeDefined();
       expect(beer2Rec).toBeDefined();
       expect(Number(beer1Rec.score_compatibility)).toBeGreaterThan(Number(beer2Rec.score_compatibility));
@@ -106,7 +106,7 @@ describe('Recommendations Integration', () => {
         .get(`/api/recommendations/user/${user.id}`)
         .set('Authorization', `Bearer ${userToken(user.id)}`);
       expect(res.status).toBe(200);
-      expect(res.body.data).toEqual([]);
+      expect(res.body.data.data).toEqual([]);
     });
   });
 

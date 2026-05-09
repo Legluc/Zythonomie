@@ -2,9 +2,11 @@ import { Request, Response } from 'express';
 import { sendSuccess } from '../lib/response';
 import { createUser, findAllUsers, findUserById, softDeleteUser, updateUser } from '../services/user.service';
 
-export async function getUsers(_req: Request, res: Response): Promise<void> {
-  const users = await findAllUsers();
-  sendSuccess(res, 200, users);
+export async function getUsers(req: Request, res: Response): Promise<void> {
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 20;
+  const result = await findAllUsers(page, limit);
+  sendSuccess(res, 200, result);
 }
 
 export async function getUserById(req: Request, res: Response): Promise<void> {
