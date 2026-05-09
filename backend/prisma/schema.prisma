@@ -29,6 +29,23 @@ enum QuizzSessionStatus {
 }
 
 // ─────────────────────────────────────────────
+//  AUTH
+// ─────────────────────────────────────────────
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  id_user    Int
+  token      String    @unique @db.VarChar(512)
+  expires_at DateTime
+  revoked_at DateTime?
+  created_at DateTime  @default(now())
+
+  user User @relation(fields: [id_user], references: [id], onDelete: Cascade)
+
+  @@map("refresh_token")
+}
+
+// ─────────────────────────────────────────────
 //  USER
 // ─────────────────────────────────────────────
 
@@ -48,6 +65,7 @@ model User {
   recommendedBeers BeerRecommendedUser[]
   criterias        UserCriteria[]
   quizzSessions    QuizzSession[]
+  refreshTokens    RefreshToken[]
 
   @@map("user")
 }

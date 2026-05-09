@@ -3,17 +3,10 @@ import { HttpError } from '../lib/http-error';
 
 /**
  * Middleware de vérification du rôle ADMIN.
- *
- * TODO: Remplacer par une vérification JWT réelle une fois le module
- * d'authentification implémenté. Le token décodé devra être attaché
- * à `req.user` par un middleware `authenticate` en amont.
- *
- * En attendant, lit l'en-tête `X-User-Role` pour les tests manuels.
- * NE PAS utiliser en production sans authentification JWT.
+ * Doit être précédé du middleware `authenticate` qui pose `req.user`.
  */
 export function requireAdmin(req: Request, _res: Response, next: NextFunction): void {
-  // À remplacer par : const role = (req as any).user?.role;
-  const role = req.headers['x-user-role'];
+  const role = req.user?.role;
 
   if (role !== 'ADMIN') {
     throw new HttpError(403, 'FORBIDDEN', 'Accès réservé aux administrateurs');
