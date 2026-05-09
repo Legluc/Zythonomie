@@ -38,6 +38,128 @@ const updateSchema = z
 
 // GET /api/quizz-questions/by-quizz/:id_quizz  → toutes les questions d'un quiz
 router.get('/by-quizz/:id_quizz', authenticate, validate(quizzIdParamsSchema, 'params'), getQuestionsByQuizz);
+/**
+ * @openapi
+ * /quizz-questions/by-quizz/{id_quizz}:
+ *   get:
+ *     summary: Questions d'un quiz
+ *     tags: [QuizzQuestions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - { in: path, name: id_quizz, required: true, schema: { type: integer } }
+ *     responses:
+ *       200:
+ *         description: Liste des questions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items: { $ref: '#/components/schemas/QuizzQuestion' }
+ *       401: { description: Non authentifié }
+ *       404: { description: Quiz introuvable }
+ * /quizz-questions/{id}:
+ *   get:
+ *     summary: Détail d'une question
+ *     tags: [QuizzQuestions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     responses:
+ *       200:
+ *         description: Question trouvée
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data: { $ref: '#/components/schemas/QuizzQuestion' }
+ *       401: { description: Non authentifié }
+ *       404: { description: Question introuvable }
+ *   patch:
+ *     summary: Met à jour une question (ADMIN)
+ *     tags: [QuizzQuestions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_criterion: { type: integer }
+ *               question: { type: string, maxLength: 150 }
+ *     responses:
+ *       200:
+ *         description: Question mise à jour
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data: { $ref: '#/components/schemas/QuizzQuestion' }
+ *       400: { description: Données invalides }
+ *       401: { description: Non authentifié }
+ *       403: { description: Accès refusé }
+ *       404: { description: Question introuvable }
+ *   delete:
+ *     summary: Supprime une question (ADMIN) — bloqué si des réponses existent
+ *     tags: [QuizzQuestions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - { in: path, name: id, required: true, schema: { type: integer } }
+ *     responses:
+ *       200: { description: Supprimée }
+ *       401: { description: Non authentifié }
+ *       403: { description: Accès refusé }
+ *       404: { description: Question introuvable }
+ *       409: { description: Des réponses existent pour cette question }
+ * /quizz-questions:
+ *   post:
+ *     summary: Crée une question de quiz (ADMIN)
+ *     tags: [QuizzQuestions]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [id_quizz, id_criterion, question]
+ *             properties:
+ *               id_quizz: { type: integer }
+ *               id_criterion: { type: integer }
+ *               question: { type: string, maxLength: 150 }
+ *     responses:
+ *       201:
+ *         description: Question créée
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data: { $ref: '#/components/schemas/QuizzQuestion' }
+ *       400: { description: Données invalides }
+ *       401: { description: Non authentifié }
+ *       403: { description: Accès refusé }
+ */
 
 // GET /api/quizz-questions/:id
 router.get('/:id', authenticate, validate(idParamsSchema, 'params'), getQuizzQuestionById);
