@@ -1,4 +1,5 @@
 import { Prisma, Role } from '@prisma/client';
+import bcrypt from 'bcrypt';
 import prisma from '../lib/prisma';
 import { HttpError } from '../lib/http-error';
 
@@ -69,12 +70,14 @@ export async function createUser(input: CreateUserInput): Promise<UserPublic> {
     throw new HttpError(409, 'USER_MAIL_CONFLICT', 'Cet email est deja utilise');
   }
 
+  const hashedPassword = await bcrypt.hash(input.password, 12);
+
   return prisma.user.create({
     data: {
       name: input.name,
       firstname: input.firstname,
       mail: input.mail,
-      password: input.password,
+      password: hashedPassword,
       birthday: new Date(input.birthday),
       adress: input.adress,
       icon: input.icon,
@@ -108,7 +111,7 @@ export async function updateUser(id: number, input: UpdateUserInput): Promise<Us
       name: input.name,
       firstname: input.firstname,
       mail: input.mail,
-      password: input.password,
+      password: input.password ? await bcrypt.hash(input.password, 12) : undefined,
       birthday: input.birthday ? new Date(input.birthday) : undefined,
       adress: input.adress,
       icon: input.icon,
