@@ -9,7 +9,11 @@ export function validate(schema: ZodTypeAny, target: ValidationTarget = 'body') 
     const parseResult = schema.safeParse(req[target]);
 
     if (!parseResult.success) {
-      throw new HttpError(400, 'VALIDATION_ERROR', 'Donnees invalides', parseResult.error.flatten());
+      const details = parseResult.error.issues.map((issue) => ({
+        field: issue.path.join('.') || '_root',
+        message: issue.message,
+      }));
+      throw new HttpError(400, 'VALIDATION_ERROR', 'Erreur de validation', details);
     }
 
     if (target === 'query') {

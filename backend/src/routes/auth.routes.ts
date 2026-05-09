@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/authenticate';
 import {
@@ -31,8 +32,20 @@ const refreshSchema = z.object({
   refreshToken: z.string().min(1),
 });
 
+const loginLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: { code: 'TOO_MANY_REQUESTS', message: 'Trop de tentatives de connexion. Réessayez dans 1 minute.' },
+  },
+  skip: () => process.env.NODE_ENV === 'test',
+});
+
 router.post('/register', validate(registerSchema, 'body'), registerHandler);
-router.post('/login', validate(loginSchema, 'body'), loginHandler);
+router.post('/login', loginLimiter, validate(loginSchema, 'body'), loginHandler);
 router.post('/refresh', validate(refreshSchema, 'body'), refreshHandler);
 router.get('/me', authenticate, getMeHandler);
 router.post('/logout', authenticate, validate(refreshSchema, 'body'), logoutHandler);
