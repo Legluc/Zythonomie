@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { Role } from '@prisma/client';
 import { validate } from '../middleware/validate';
+import { authenticate } from '../middleware/authenticate';
+import { requireAdmin } from '../middleware/require-admin';
+import { requireOwnerOrAdmin } from '../middleware/require-owner-or-admin';
 import { deleteUser, getUserById, getUsers, postUser, putUser } from '../controllers/user.controller';
 
 const router = Router();
@@ -36,10 +39,23 @@ const userUpdateSchema = z
     message: 'Au moins un champ est requis pour la mise a jour',
   });
 
-router.get('/', getUsers);
-router.get('/:id', validate(idParamsSchema, 'params'), getUserById);
-router.post('/', validate(userCreateSchema), postUser);
-router.put('/:id', validate(idParamsSchema, 'params'), validate(userUpdateSchema), putUser);
-router.delete('/:id', validate(idParamsSchema, 'params'), deleteUser);
+router.get('/', authenticate, requireAdmin, getUsers);
+router.get('/:id', authenticate, requireOwnerOrAdmin('id'), validate(idParamsSchema, 'params'), getUserById);
+// Création directe d'utilisateur réservée à l'admin (l'inscription publique passe par /api/auth/register)
+router.post('/', authenticate, requireAdmin, validate(userCreateSchema), postUser);
+// Propriétaire ou admin — le champ `role` est ignoré si non admin (middleware inline)
+router.put(
+  '/:id',
+  authenticate,
+  requireOwnerOrAdmin('id'),
+  (req, _res, next) => {
+    if (req.user?.role !== 'ADMIN') delete req.body.role;
+    next();
+  },
+  validate(idParamsSchema, 'params'),
+  validate(userUpdateSchema),
+  putUser,
+);
+router.delete('/:id', authenticate, requireOwnerOrAdmin('id'), validate(idParamsSchema, 'params'), deleteUser);
 
 export default router;

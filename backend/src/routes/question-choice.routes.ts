@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { authenticate } from '../middleware/authenticate';
 import { requireAdmin } from '../middleware/require-admin';
 import {
   deleteQuestionChoiceHandler,
@@ -38,20 +39,21 @@ const updateSchema = z
 // GET /api/question-choices/by-question/:id_quizz_question
 router.get(
   '/by-question/:id_quizz_question',
+  authenticate,
   validate(questionIdParamsSchema, 'params'),
   getChoicesByQuestion,
 );
 
 // GET /api/question-choices/:id
-router.get('/:id', validate(idParamsSchema, 'params'), getQuestionChoiceById);
+router.get('/:id', authenticate, validate(idParamsSchema, 'params'), getQuestionChoiceById);
 
 // POST /api/question-choices  — ADMIN
-router.post('/', requireAdmin, validate(createSchema), postQuestionChoice);
+router.post('/', authenticate, requireAdmin, validate(createSchema), postQuestionChoice);
 
 // PATCH /api/question-choices/:id  — ADMIN
-router.patch('/:id', requireAdmin, validate(idParamsSchema, 'params'), validate(updateSchema), patchQuestionChoice);
+router.patch('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), validate(updateSchema), patchQuestionChoice);
 
 // DELETE /api/question-choices/:id  — ADMIN
-router.delete('/:id', requireAdmin, validate(idParamsSchema, 'params'), deleteQuestionChoiceHandler);
+router.delete('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), deleteQuestionChoiceHandler);
 
 export default router;

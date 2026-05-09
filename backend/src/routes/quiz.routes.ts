@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { authenticate } from '../middleware/authenticate';
+import { requireAdmin } from '../middleware/require-admin';
 import { getQuizById, getQuizzes, postQuiz } from '../controllers/quiz.controller';
 
 const router = Router();
@@ -28,8 +30,8 @@ const quizCreateSchema = z.object({
   ).min(1),
 });
 
-router.get('/', getQuizzes);
-router.get('/:id', validate(idSchema, 'params'), getQuizById);
-router.post('/', validate(quizCreateSchema), postQuiz);
+router.get('/', authenticate, getQuizzes);
+router.get('/:id', authenticate, validate(idSchema, 'params'), getQuizById);
+router.post('/', authenticate, requireAdmin, validate(quizCreateSchema), postQuiz);
 
 export default router;

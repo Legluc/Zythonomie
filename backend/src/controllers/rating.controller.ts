@@ -27,12 +27,12 @@ export async function postRating(req: Request, res: Response): Promise<void> {
 
 export async function putRating(req: Request, res: Response): Promise<void> {
   const ratingId = Number(req.params.id);
-  const rating = await updateRating(ratingId, req.body);
+  const rating = await updateRating(ratingId, req.body, req.user);
   sendSuccess(res, 200, rating);
 }
 
 export async function deleteRating(req: Request, res: Response): Promise<void> {
   const ratingId = Number(req.params.id);
-  await softDeleteRating(ratingId);
+  await softDeleteRating(ratingId, req.user);
   sendSuccess(res, 200, { id: ratingId, deleted: true });
 }

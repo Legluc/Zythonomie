@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { authenticate } from '../middleware/authenticate';
+import { requireAdmin } from '../middleware/require-admin';
 import {
   deletePairingHandler,
   getPairingById,
@@ -33,11 +35,11 @@ const pairingUpdateSchema = z
     message: 'Au moins un champ est requis pour la mise a jour',
   });
 
-router.get('/', getPairings);
-router.get('/:id', validate(idParamsSchema, 'params'), getPairingById);
-router.post('/', validate(pairingCreateSchema), postPairing);
-router.put('/:id', validate(idParamsSchema, 'params'), validate(pairingUpdateSchema), putPairing);
-router.delete('/:id', validate(idParamsSchema, 'params'), deletePairingHandler);
+router.get('/', authenticate, getPairings);
+router.get('/:id', authenticate, validate(idParamsSchema, 'params'), getPairingById);
+router.post('/', authenticate, requireAdmin, validate(pairingCreateSchema), postPairing);
+router.put('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), validate(pairingUpdateSchema), putPairing);
+router.delete('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), deletePairingHandler);
 
 // ─── Liaisons atomiques ───────────────────────────────────────────────────────
 
@@ -47,7 +49,7 @@ const categoryParamSchema = z.object({
   id_category: z.coerce.number().int().positive(),
 });
 
-router.post('/:id/categories', validate(idParamsSchema, 'params'), validate(categoryLinkSchema), postPairingCategory);
-router.delete('/:id/categories/:id_category', validate(categoryParamSchema, 'params'), deletePairingCategory);
+router.post('/:id/categories', authenticate, requireAdmin, validate(idParamsSchema, 'params'), validate(categoryLinkSchema), postPairingCategory);
+router.delete('/:id/categories/:id_category', authenticate, requireAdmin, validate(categoryParamSchema, 'params'), deletePairingCategory);
 
 export default router;

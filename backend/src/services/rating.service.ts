@@ -91,8 +91,21 @@ export async function createRating(input: CreateRatingInput): Promise<RatingPubl
   });
 }
 
-export async function updateRating(id: number, input: UpdateRatingInput): Promise<RatingPublic> {
-  await ensureActiveRating(id);
+export interface RequestingUser {
+  id: number;
+  role: string;
+}
+
+export async function updateRating(
+  id: number,
+  input: UpdateRatingInput,
+  requestingUser?: RequestingUser,
+): Promise<RatingPublic> {
+  const rating = await findActiveRating(id);
+
+  if (requestingUser && requestingUser.role !== 'ADMIN' && rating.id_user !== requestingUser.id) {
+    throw new HttpError(403, 'FORBIDDEN', 'Vous ne pouvez modifier que vos propres notes');
+  }
 
   return prisma.rating.update({
     where: { id },
@@ -104,8 +117,12 @@ export async function updateRating(id: number, input: UpdateRatingInput): Promis
   });
 }
 
-export async function softDeleteRating(id: number): Promise<void> {
-  await ensureActiveRating(id);
+export async function softDeleteRating(id: number, requestingUser?: RequestingUser): Promise<void> {
+  const rating = await findActiveRating(id);
+
+  if (requestingUser && requestingUser.role !== 'ADMIN' && rating.id_user !== requestingUser.id) {
+    throw new HttpError(403, 'FORBIDDEN', 'Vous ne pouvez supprimer que vos propres notes');
+  }
 
   await prisma.rating.update({
     where: { id },
@@ -113,15 +130,17 @@ export async function softDeleteRating(id: number): Promise<void> {
   });
 }
 
-async function ensureActiveRating(id: number): Promise<void> {
+async function findActiveRating(id: number): Promise<{ id: number; id_user: number }> {
   const rating = await prisma.rating.findFirst({
     where: { id, deleted_at: null },
-    select: { id: true },
+    select: { id: true, id_user: true },
   });
 
   if (!rating) {
     throw new HttpError(404, 'RATING_NOT_FOUND', 'Note introuvable');
   }
+
+  return rating;
 }
 
 async function ensureActiveUser(id: number): Promise<void> {

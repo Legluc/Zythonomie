@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { authenticate } from '../middleware/authenticate';
 import { requireAdmin } from '../middleware/require-admin';
 import {
   deleteQuizzQuestionHandler,
@@ -36,16 +37,16 @@ const updateSchema = z
   });
 
 // GET /api/quizz-questions/by-quizz/:id_quizz  → toutes les questions d'un quiz
-router.get('/by-quizz/:id_quizz', validate(quizzIdParamsSchema, 'params'), getQuestionsByQuizz);
+router.get('/by-quizz/:id_quizz', authenticate, validate(quizzIdParamsSchema, 'params'), getQuestionsByQuizz);
 
 // GET /api/quizz-questions/:id
-router.get('/:id', validate(idParamsSchema, 'params'), getQuizzQuestionById);
+router.get('/:id', authenticate, validate(idParamsSchema, 'params'), getQuizzQuestionById);
 
 // POST /api/quizz-questions  — ADMIN
-router.post('/', requireAdmin, validate(createSchema), postQuizzQuestion);
+router.post('/', authenticate, requireAdmin, validate(createSchema), postQuizzQuestion);
 
 // PATCH /api/quizz-questions/:id  — ADMIN
-router.patch('/:id', requireAdmin, validate(idParamsSchema, 'params'), validate(updateSchema), patchQuizzQuestion);
+router.patch('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), validate(updateSchema), patchQuizzQuestion);
 
 // DELETE /api/quizz-questions/:id  — ADMIN
 router.delete('/:id', requireAdmin, validate(idParamsSchema, 'params'), deleteQuizzQuestionHandler);

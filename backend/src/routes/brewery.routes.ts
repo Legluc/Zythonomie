@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../middleware/validate';
+import { authenticate } from '../middleware/authenticate';
+import { requireAdmin } from '../middleware/require-admin';
 import {
   deleteBreweryHandler,
   getBreweries,
@@ -33,10 +35,10 @@ const breweryUpdateSchema = z
     message: 'Au moins un champ est requis pour la mise a jour',
   });
 
-router.get('/', getBreweries);
-router.get('/:id', validate(idParamsSchema, 'params'), getBreweryById);
-router.post('/', validate(breweryCreateSchema), postBrewery);
-router.put('/:id', validate(idParamsSchema, 'params'), validate(breweryUpdateSchema), putBrewery);
-router.delete('/:id', validate(idParamsSchema, 'params'), deleteBreweryHandler);
+router.get('/', authenticate, getBreweries);
+router.get('/:id', authenticate, validate(idParamsSchema, 'params'), getBreweryById);
+router.post('/', authenticate, requireAdmin, validate(breweryCreateSchema), postBrewery);
+router.put('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), validate(breweryUpdateSchema), putBrewery);
+router.delete('/:id', authenticate, requireAdmin, validate(idParamsSchema, 'params'), deleteBreweryHandler);
 
 export default router;
