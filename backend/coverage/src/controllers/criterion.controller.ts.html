@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -111,31 +111,31 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Request, Response } from 'express';
 import { sendSuccess } from '../lib/response';
@@ -147,32 +147,32 @@ import {
   updateCriterion,
 } from '../services/criterion.service';
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getCriteria(_</span>req: Request, res: Response): Promise&lt;void&gt; {
-  const criteria = <span class="cstat-no" title="statement not covered" >await findAllCriteria();</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, criteria);</span>
+export async function getCriteria(_req: Request, res: Response): Promise&lt;void&gt; {
+  const criteria = await findAllCriteria();
+  sendSuccess(res, 200, criteria);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getCriterionById(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const criterion = <span class="cstat-no" title="statement not covered" >await findCriterionById(id);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, criterion);</span>
+export async function getCriterionById(req: Request, res: Response): Promise&lt;void&gt; {
+  const id = Number(req.params.id);
+  const criterion = await findCriterionById(id);
+  sendSuccess(res, 200, criterion);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >postCriterion(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const criterion = <span class="cstat-no" title="statement not covered" >await createCriterion(req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 201, criterion);</span>
+export async function postCriterion(req: Request, res: Response): Promise&lt;void&gt; {
+  const criterion = await createCriterion(req.body);
+  sendSuccess(res, 201, criterion);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >patchCriterion(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const criterion = <span class="cstat-no" title="statement not covered" >await updateCriterion(id, req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, criterion);</span>
+export async function patchCriterion(req: Request, res: Response): Promise&lt;void&gt; {
+  const id = Number(req.params.id);
+  const criterion = await updateCriterion(id, req.body);
+  sendSuccess(res, 200, criterion);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >deleteCriterionHandler(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-<span class="cstat-no" title="statement not covered" >  await deleteCriterion(id);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, { id, deleted: true });</span>
+export async function deleteCriterionHandler(req: Request, res: Response): Promise&lt;void&gt; {
+  const id = Number(req.params.id);
+  await deleteCriterion(id);
+  sendSuccess(res, 200, { id, deleted: true });
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -181,7 +181,7 @@ export async function <span class="fstat-no" title="function not covered" >delet
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-19T14:07:24.578Z
+                at 2026-05-15T21:32:35.488Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

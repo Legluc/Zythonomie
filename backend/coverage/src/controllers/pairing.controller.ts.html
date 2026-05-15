@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">68.18% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>15/22</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>2/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">71.42% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/7</span>
+                <span class='fraction'>5/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">68.18% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>15/22</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -117,7 +117,9 @@
 <a name='L52'></a><a href='#L52'>52</a>
 <a name='L53'></a><a href='#L53'>53</a>
 <a name='L54'></a><a href='#L54'>54</a>
-<a name='L55'></a><a href='#L55'>55</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -130,31 +132,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -183,32 +187,34 @@ import {
   updatePairing,
 } from '../services/pairing.service';
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getPairings(_</span>req: Request, res: Response): Promise&lt;void&gt; {
-  const pairings = <span class="cstat-no" title="statement not covered" >await findAllPairings();</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, pairings);</span>
+export async function getPairings(req: Request, res: Response): Promise&lt;void&gt; {
+  const page = req.query.page ? <span class="branch-0 cbranch-no" title="branch not covered" >Number(req.query.page) </span>: 1;
+  const limit = req.query.limit ? <span class="branch-0 cbranch-no" title="branch not covered" >Number(req.query.limit) </span>: 20;
+  const result = await findAllPairings(page, limit);
+  sendSuccess(res, 200, result);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getPairingById(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const pairingId = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const pairing = <span class="cstat-no" title="statement not covered" >await findPairingById(pairingId);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, pairing);</span>
+export async function getPairingById(req: Request, res: Response): Promise&lt;void&gt; {
+  const pairingId = Number(req.params.id);
+  const pairing = await findPairingById(pairingId);
+  sendSuccess(res, 200, pairing);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >postPairing(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const pairing = <span class="cstat-no" title="statement not covered" >await createPairing(req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 201, pairing);</span>
+export async function postPairing(req: Request, res: Response): Promise&lt;void&gt; {
+  const pairing = await createPairing(req.body);
+  sendSuccess(res, 201, pairing);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >putPairing(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const pairingId = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const pairing = <span class="cstat-no" title="statement not covered" >await updatePairing(pairingId, req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, pairing);</span>
+export async function putPairing(req: Request, res: Response): Promise&lt;void&gt; {
+  const pairingId = Number(req.params.id);
+  const pairing = await updatePairing(pairingId, req.body);
+  sendSuccess(res, 200, pairing);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >deletePairingHandler(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const pairingId = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-<span class="cstat-no" title="statement not covered" >  await deletePairing(pairingId);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, { id: pairingId, deleted: true });</span>
+export async function deletePairingHandler(req: Request, res: Response): Promise&lt;void&gt; {
+  const pairingId = Number(req.params.id);
+  await deletePairing(pairingId);
+  sendSuccess(res, 200, { id: pairingId, deleted: true });
 }
 &nbsp;
 // ─── Liaisons atomiques ───────────────────────────────────────────────────────
@@ -232,7 +238,7 @@ export async function <span class="fstat-no" title="function not covered" >delet
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-19T14:07:24.578Z
+                at 2026-05-15T21:32:35.488Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

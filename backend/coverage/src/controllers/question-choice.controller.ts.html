@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>16/16</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">50% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>2/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>16/16</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -101,7 +101,9 @@
 <a name='L36'></a><a href='#L36'>36</a>
 <a name='L37'></a><a href='#L37'>37</a>
 <a name='L38'></a><a href='#L38'>38</a>
-<a name='L39'></a><a href='#L39'>39</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -112,32 +114,34 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Request, Response } from 'express';
 import { sendSuccess } from '../lib/response';
@@ -149,33 +153,35 @@ import {
   updateQuestionChoice,
 } from '../services/question-choice.service';
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getChoicesByQuestion(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id_quizz_question = <span class="cstat-no" title="statement not covered" >Number(req.params.id_quizz_question);</span>
-  const choices = <span class="cstat-no" title="statement not covered" >await findChoicesByQuestion(id_quizz_question);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, choices);</span>
+export async function getChoicesByQuestion(req: Request, res: Response): Promise&lt;void&gt; {
+  const id_quizz_question = Number(req.params.id_quizz_question);
+  const page = req.query.page ? <span class="branch-0 cbranch-no" title="branch not covered" >Number(req.query.page) </span>: 1;
+  const limit = req.query.limit ? <span class="branch-0 cbranch-no" title="branch not covered" >Number(req.query.limit) </span>: 20;
+  const result = await findChoicesByQuestion(id_quizz_question, page, limit);
+  sendSuccess(res, 200, result);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getQuestionChoiceById(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const choice = <span class="cstat-no" title="statement not covered" >await findQuestionChoiceById(id);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, choice);</span>
+export async function getQuestionChoiceById(req: Request, res: Response): Promise&lt;void&gt; {
+  const id = Number(req.params.id);
+  const choice = await findQuestionChoiceById(id);
+  sendSuccess(res, 200, choice);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >postQuestionChoice(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const choice = <span class="cstat-no" title="statement not covered" >await createQuestionChoice(req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 201, choice);</span>
+export async function postQuestionChoice(req: Request, res: Response): Promise&lt;void&gt; {
+  const choice = await createQuestionChoice(req.body);
+  sendSuccess(res, 201, choice);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >patchQuestionChoice(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const choice = <span class="cstat-no" title="statement not covered" >await updateQuestionChoice(id, req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, choice);</span>
+export async function patchQuestionChoice(req: Request, res: Response): Promise&lt;void&gt; {
+  const id = Number(req.params.id);
+  const choice = await updateQuestionChoice(id, req.body);
+  sendSuccess(res, 200, choice);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >deleteQuestionChoiceHandler(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-<span class="cstat-no" title="statement not covered" >  await deleteQuestionChoice(id);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, { id, deleted: true });</span>
+export async function deleteQuestionChoiceHandler(req: Request, res: Response): Promise&lt;void&gt; {
+  const id = Number(req.params.id);
+  await deleteQuestionChoice(id);
+  sendSuccess(res, 200, { id, deleted: true });
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -184,7 +190,7 @@ export async function <span class="fstat-no" title="function not covered" >delet
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-19T14:07:24.578Z
+                at 2026-05-15T21:32:35.488Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

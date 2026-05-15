@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -108,30 +108,30 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Request, Response } from 'express';
 import { sendSuccess } from '../lib/response';
@@ -142,31 +142,31 @@ import {
   upsertUserCriteria,
 } from '../services/user-criteria.service';
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getUserCriteria(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id_user = <span class="cstat-no" title="statement not covered" >Number(req.params.id_user);</span>
-  const entries = <span class="cstat-no" title="statement not covered" >await findCriteriaByUser(id_user);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, entries);</span>
+export async function getUserCriteria(req: Request, res: Response): Promise&lt;void&gt; {
+  const id_user = Number(req.params.id_user);
+  const entries = await findCriteriaByUser(id_user);
+  sendSuccess(res, 200, entries);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getUserCriteriaEntry(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id_user = <span class="cstat-no" title="statement not covered" >Number(req.params.id_user);</span>
-  const id_criterion = <span class="cstat-no" title="statement not covered" >Number(req.params.id_criterion);</span>
-  const entry = <span class="cstat-no" title="statement not covered" >await findUserCriteriaEntry(id_user, id_criterion);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, entry);</span>
+export async function getUserCriteriaEntry(req: Request, res: Response): Promise&lt;void&gt; {
+  const id_user = Number(req.params.id_user);
+  const id_criterion = Number(req.params.id_criterion);
+  const entry = await findUserCriteriaEntry(id_user, id_criterion);
+  sendSuccess(res, 200, entry);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >putUserCriteria(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id_user = <span class="cstat-no" title="statement not covered" >Number(req.params.id_user);</span>
-  const id_criterion = <span class="cstat-no" title="statement not covered" >Number(req.params.id_criterion);</span>
-  const entry = <span class="cstat-no" title="statement not covered" >await upsertUserCriteria({ id_user, id_criterion, score: req.body.score });</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, entry);</span>
+export async function putUserCriteria(req: Request, res: Response): Promise&lt;void&gt; {
+  const id_user = Number(req.params.id_user);
+  const id_criterion = Number(req.params.id_criterion);
+  const entry = await upsertUserCriteria({ id_user, id_criterion, score: req.body.score });
+  sendSuccess(res, 200, entry);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >deleteUserCriteriaHandler(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id_user = <span class="cstat-no" title="statement not covered" >Number(req.params.id_user);</span>
-  const id_criterion = <span class="cstat-no" title="statement not covered" >Number(req.params.id_criterion);</span>
-<span class="cstat-no" title="statement not covered" >  await deleteUserCriteria(id_user, id_criterion);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, { id_user, id_criterion, deleted: true });</span>
+export async function deleteUserCriteriaHandler(req: Request, res: Response): Promise&lt;void&gt; {
+  const id_user = Number(req.params.id_user);
+  const id_criterion = Number(req.params.id_criterion);
+  await deleteUserCriteria(id_user, id_criterion);
+  sendSuccess(res, 200, { id_user, id_criterion, deleted: true });
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -175,7 +175,7 @@ export async function <span class="fstat-no" title="function not covered" >delet
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-19T14:07:24.578Z
+                at 2026-05-15T21:32:35.488Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

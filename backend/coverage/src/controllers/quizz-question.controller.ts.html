@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">78.57% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>11/14</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">80% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>4/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">78.57% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/14</span>
+                <span class='fraction'>11/14</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -112,26 +112,26 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -149,27 +149,27 @@ import {
   updateQuizzQuestion,
 } from '../services/quizz-question.service';
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getQuestionsByQuizz(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id_quizz = <span class="cstat-no" title="statement not covered" >Number(req.params.id_quizz);</span>
-  const questions = <span class="cstat-no" title="statement not covered" >await findQuestionsByQuizz(id_quizz);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, questions);</span>
+export async function getQuestionsByQuizz(req: Request, res: Response): Promise&lt;void&gt; {
+  const id_quizz = Number(req.params.id_quizz);
+  const questions = await findQuestionsByQuizz(id_quizz);
+  sendSuccess(res, 200, questions);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getQuizzQuestionById(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const question = <span class="cstat-no" title="statement not covered" >await findQuizzQuestionById(id);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, question);</span>
+export async function getQuizzQuestionById(req: Request, res: Response): Promise&lt;void&gt; {
+  const id = Number(req.params.id);
+  const question = await findQuizzQuestionById(id);
+  sendSuccess(res, 200, question);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >postQuizzQuestion(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const question = <span class="cstat-no" title="statement not covered" >await createQuizzQuestion(req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 201, question);</span>
+export async function postQuizzQuestion(req: Request, res: Response): Promise&lt;void&gt; {
+  const question = await createQuizzQuestion(req.body);
+  sendSuccess(res, 201, question);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >patchQuizzQuestion(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const id = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const question = <span class="cstat-no" title="statement not covered" >await updateQuizzQuestion(id, req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, question);</span>
+export async function patchQuizzQuestion(req: Request, res: Response): Promise&lt;void&gt; {
+  const id = Number(req.params.id);
+  const question = await updateQuizzQuestion(id, req.body);
+  sendSuccess(res, 200, question);
 }
 &nbsp;
 export async function <span class="fstat-no" title="function not covered" >deleteQuizzQuestionHandler(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
@@ -184,7 +184,7 @@ export async function <span class="fstat-no" title="function not covered" >delet
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-19T14:07:24.578Z
+                at 2026-05-15T21:32:35.488Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

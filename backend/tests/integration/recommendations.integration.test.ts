@@ -121,4 +121,35 @@ describe('Recommendations Integration', () => {
       expect(res.body).toHaveProperty('data');
     });
   });
+
+  it('GET /api/recommendations/user/:userId — 403 for other user (IDOR)', async () => {
+    await withTestTransaction(async () => {
+      const user1 = await createTestUser({ name: 'User1' });
+      const user2 = await createTestUser({ name: 'User2' });
+
+      // User1 sets up recommendations
+      const c1 = await createTestCriterion();
+      await prisma.userCriteria.create({ data: { id_user: user1.id, id_criterion: c1.id, score: 3 } });
+
+      // User2 tries to access User1's recommendations
+      const res = await request(app)
+        .get(`/api/recommendations/user/${user1.id}`)
+        .set('Authorization', `Bearer ${userToken(user2.id)}`);
+      expect(res.status).toBe(403);
+    });
+  });
+
+  it('POST /api/quizz-sessions — 404 if quiz does not exist', async () => {
+    await withTestTransaction(async () => {
+      const user = await createTestUser();
+
+      const res = await request(app)
+        .post('/api/quizz-sessions')
+        .set('Authorization', `Bearer ${userToken(user.id)}`)
+        .send({ id_user: user.id, id_quizz: 999999 });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('QUIZ_NOT_FOUND');
+    });
+  });
 });
