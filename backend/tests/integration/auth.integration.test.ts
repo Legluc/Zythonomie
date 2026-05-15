@@ -178,6 +178,28 @@ describe('Auth Integration — POST /api/auth/refresh', () => {
       expect(res.status).toBe(401);
     });
   });
+
+  it('401 si refresh token est révoqué après logout', async () => {
+    await withTestTransaction(async () => {
+      const user = testUser();
+      const regRes = await request(app).post('/api/auth/register').send(user);
+      const { accessToken, refreshToken } = regRes.body.data;
+
+      // Logout et révoque le refresh token
+      await request(app)
+        .post('/api/auth/logout')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ refreshToken });
+
+      // Essayer d'utiliser le refresh token révoqué — devrait échouer
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken });
+
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe('INVALID_TOKEN');
+    });
+  });
 });
 
 describe('Auth Integration — POST /api/auth/logout', () => {

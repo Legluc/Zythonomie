@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>15/15</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">50% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>2/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
-                <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
-            </div>
-        
-            
-            <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -100,7 +100,9 @@
 <a name='L35'></a><a href='#L35'>35</a>
 <a name='L36'></a><a href='#L36'>36</a>
 <a name='L37'></a><a href='#L37'>37</a>
-<a name='L38'></a><a href='#L38'>38</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -111,31 +113,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Request, Response } from 'express';
 import { sendSuccess } from '../lib/response';
@@ -147,32 +151,34 @@ import {
   updateBrewery,
 } from '../services/brewery.service';
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getBreweries(_</span>req: Request, res: Response): Promise&lt;void&gt; {
-  const breweries = <span class="cstat-no" title="statement not covered" >await findAllBreweries();</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, breweries);</span>
+export async function getBreweries(req: Request, res: Response): Promise&lt;void&gt; {
+  const page = req.query.page ? <span class="branch-0 cbranch-no" title="branch not covered" >Number(req.query.page) </span>: 1;
+  const limit = req.query.limit ? <span class="branch-0 cbranch-no" title="branch not covered" >Number(req.query.limit) </span>: 20;
+  const result = await findAllBreweries(page, limit);
+  sendSuccess(res, 200, result);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getBreweryById(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const breweryId = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const brewery = <span class="cstat-no" title="statement not covered" >await findBreweryById(breweryId);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, brewery);</span>
+export async function getBreweryById(req: Request, res: Response): Promise&lt;void&gt; {
+  const breweryId = Number(req.params.id);
+  const brewery = await findBreweryById(breweryId);
+  sendSuccess(res, 200, brewery);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >postBrewery(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const brewery = <span class="cstat-no" title="statement not covered" >await createBrewery(req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 201, brewery);</span>
+export async function postBrewery(req: Request, res: Response): Promise&lt;void&gt; {
+  const brewery = await createBrewery(req.body);
+  sendSuccess(res, 201, brewery);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >putBrewery(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const breweryId = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const brewery = <span class="cstat-no" title="statement not covered" >await updateBrewery(breweryId, req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, brewery);</span>
+export async function putBrewery(req: Request, res: Response): Promise&lt;void&gt; {
+  const breweryId = Number(req.params.id);
+  const brewery = await updateBrewery(breweryId, req.body);
+  sendSuccess(res, 200, brewery);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >deleteBreweryHandler(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const breweryId = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-<span class="cstat-no" title="statement not covered" >  await deleteBrewery(breweryId);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, { id: breweryId, deleted: true });</span>
+export async function deleteBreweryHandler(req: Request, res: Response): Promise&lt;void&gt; {
+  const breweryId = Number(req.params.id);
+  await deleteBrewery(breweryId);
+  sendSuccess(res, 200, { id: breweryId, deleted: true });
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -181,7 +187,7 @@ export async function <span class="fstat-no" title="function not covered" >delet
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-19T14:07:24.578Z
+                at 2026-05-15T21:32:35.488Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>15/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -97,36 +97,40 @@
 <a name='L32'></a><a href='#L32'>32</a>
 <a name='L33'></a><a href='#L33'>33</a>
 <a name='L34'></a><a href='#L34'>34</a>
-<a name='L35'></a><a href='#L35'>35</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -135,32 +139,34 @@
 import { sendSuccess } from '../lib/response';
 import { createUser, findAllUsers, findUserById, softDeleteUser, updateUser } from '../services/user.service';
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getUsers(_</span>req: Request, res: Response): Promise&lt;void&gt; {
-  const users = <span class="cstat-no" title="statement not covered" >await findAllUsers();</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, users);</span>
+export async function getUsers(req: Request, res: Response): Promise&lt;void&gt; {
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 20;
+  const result = await findAllUsers(page, limit);
+  sendSuccess(res, 200, result);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >getUserById(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const userId = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const user = <span class="cstat-no" title="statement not covered" >await findUserById(userId);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, user);</span>
+export async function getUserById(req: Request, res: Response): Promise&lt;void&gt; {
+  const userId = Number(req.params.id);
+  const user = await findUserById(userId);
+  sendSuccess(res, 200, user);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >postUser(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const user = <span class="cstat-no" title="statement not covered" >await createUser(req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 201, user);</span>
+export async function postUser(req: Request, res: Response): Promise&lt;void&gt; {
+  const user = await createUser(req.body);
+  sendSuccess(res, 201, user);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >putUser(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const userId = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-  const user = <span class="cstat-no" title="statement not covered" >await updateUser(userId, req.body);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, user);</span>
+export async function putUser(req: Request, res: Response): Promise&lt;void&gt; {
+  const userId = Number(req.params.id);
+  const user = await updateUser(userId, req.body);
+  sendSuccess(res, 200, user);
 }
 &nbsp;
-export async function <span class="fstat-no" title="function not covered" >deleteUser(r</span>eq: Request, res: Response): Promise&lt;void&gt; {
-  const userId = <span class="cstat-no" title="statement not covered" >Number(req.params.id);</span>
-<span class="cstat-no" title="statement not covered" >  await softDeleteUser(userId);</span>
-<span class="cstat-no" title="statement not covered" >  sendSuccess(res, 200, {</span>
+export async function deleteUser(req: Request, res: Response): Promise&lt;void&gt; {
+  const userId = Number(req.params.id);
+  await softDeleteUser(userId);
+  sendSuccess(res, 200, {
     id: userId,
     deleted: true,
   });
@@ -172,7 +178,7 @@ export async function <span class="fstat-no" title="function not covered" >delet
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-04-19T14:07:24.578Z
+                at 2026-05-15T21:32:35.488Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

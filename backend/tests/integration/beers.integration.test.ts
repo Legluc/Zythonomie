@@ -91,6 +91,25 @@ describe('Beers Integration', () => {
     });
   });
 
+  it('GET /api/beers excludes soft-deleted beers', async () => {
+    await withTestTransaction(async () => {
+      const beer1 = await createTestBeer({ name: 'IntegActiveBeer' });
+      const beer2 = await createTestBeer({ name: 'IntegSoftDeletedBeer' });
+
+      // Soft-delete beer2
+      await request(app)
+        .delete(`/api/beers/${beer2.id}`)
+        .set('Authorization', `Bearer ${adminToken()}`);
+
+      const res = await request(app)
+        .get('/api/beers')
+        .set('Authorization', `Bearer ${userToken(USER_ID)}`);
+      expect(res.status).toBe(200);
+      expect(res.body.data.data.some((b: any) => b.id === beer1.id)).toBe(true);
+      expect(res.body.data.data.some((b: any) => b.id === beer2.id)).toBe(false);
+    });
+  });
+
   it('GET /api/beers?alcool=true filters correctly', async () => {
     await withTestTransaction(async () => {
       await createTestBeer({ name: 'IntegAlcool', alcool: true });
