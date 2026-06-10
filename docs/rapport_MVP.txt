@@ -1,0 +1,81 @@
+Périmètre fonctionnel
+Le MVP se concentre sur le cœur de valeur de l'application : permettre à un utilisateur de découvrir des bières adaptées à ses goûts. Les fonctionnalités retenues sont celles sans lesquelles cette promesse centrale ne peut pas être tenue.
+
+Un système d'authentification et de gestion de compte utilisateur.
+Un quiz d'orientation permettant de cerner les préférences gustatives de l'utilisateur et de lui proposer une sélection de bières correspondante.
+Des fiches descriptives de bières, incluant les caractéristiques organoleptiques, les accords mets-bière et la note communautaire.
+Des fiches descriptives de brasseries, incluant le contexte historique et la localisation.
+Le Bièrodex : un espace personnel permettant de consigner les bières déjà goûtées et de les noter.
+Une recherche textuelle basique pour accéder directement à une bière ou une brasserie.
+
+Périmètre utilisateur
+L'application s'adresse à un public français adulte, curieux de découvrir ou d'approfondir sa culture brassicole, couvrant deux profils principaux.
+Les néophytes et curieux, souhaitant sortir des bières industrielles classiques et explorer les styles artisanaux, sans disposer des connaissances nécessaires pour s'orienter seuls dans un catalogue.
+Les amateurs avertis, déjà familiers des styles brassicoles, cherchant à structurer leur expérience, à consigner leurs découvertes et à affiner leurs recommandations au fil du temps.
+L'application est disponible exclusivement en français et cible le marché français dans sa version initiale.
+
+
+Périmètre technique
+Le projet couvre le développement d'une application mobile cross-platform (Android et iOS) développée à partir d'une base de code unique en React Native avec Expo.
+Le back-end expose une API REST développée avec Node.js et Express, connectée à une base de données MySQL via l'ORM Prisma. L'authentification repose sur des tokens JWT.
+L’ensemble de la solution est hébergé sur le VPS de l’école durant la phase prototype, puis sur une infrastructure Infomaniak pour la mise en production, couvrant le déploiement de l’API, de la base de données et la gestion des environnements.
+
+Hors périmètre
+Le scanner de code-barres permettant d'identifier une bière à partir de son étiquette.
+Le système de badges et de gamification.
+La recherche avancée avec filtres multi-critères (style, amertume, degré, région…).
+Un système de recommandation basé sur du machine learning ou des embeddings vectoriels.
+Un back-office d'administration pour la gestion du catalogue.
+Système de favoris et de wishlist.
+La gestion des contrats et bière mise en avant.
+
+
+Conception technique et fonctionnelle
+Front-end
+Le front-end sera développé avec React Native et Expo, ce qui permet un développement cross-platform (Android et iOS) à partir d'une base de code unique. Cette approche répond directement à la contrainte de toucher les deux plateformes mobiles majeures sans multiplier les équipes ni les coûts de maintenance.
+Expo simplifie considérablement la phase de démarrage en abstrayant la configuration native (Xcode, Android Studio) et en proposant des outils intégrés pour le build, la distribution en test (EAS Build, TestFlight, Play Console interne) et les mises à jour over-the-air. Pour un MVP, ce gain de temps est déterminant.
+Face à Flutter, qui impose l'apprentissage du langage Dart et introduit une rupture dans la stack, React Native permet une cohérence totale avec le back-end en JavaScript, facilitant le partage de logique métier, de types et de validations entre les deux couches. L'écosystème React Native est par ailleurs plus large en termes de librairies UI et d'intégrations tierces.
+
+Back-end
+Le back-end reposera sur Node.js avec le framework Express, exposant une API REST consommée par l'application mobile.
+Ce choix se justifie principalement par la cohérence de la stack : l'utilisation de JavaScript sur l'ensemble du projet (front-end et back-end) réduit la charge cognitive, facilite la montée en compétence et permet le partage de code entre les couches, notamment pour la validation des données et les types partagés. Node.js est par ailleurs particulièrement performant pour les architectures orientées I/O, typiques des API mobiles qui lisent et écrivent fréquemment en base de données.
+Face à Symfony, qui constitue un cadre structurant et mature, Node.js offre une mise en œuvre plus légère et plus rapide pour un MVP, sans sacrifier la scalabilité. Symfony brille davantage sur des projets portés par des équipes PHP expérimentées, dans des contextes où la complexité métier justifie son architecture « out of the box ». Dans notre contexte d'une stack full-stack JavaScript, il aurait introduit une rupture technologique sans bénéfice proportionnel.
+L'ORM Prisma est retenu pour la gestion de la base de données. Son typage fort, la génération automatique du client à partir du schéma, et la gestion simplifiée des migrations en font un choix particulièrement adapté à un développement itératif.
+
+Base de données
+La base de données reposera sur MySQL, un SGBDR éprouvé et largement documenté dans les architectures web.
+Ce choix s'explique par la nature relationnelle des données manipulées entretiennent des relations claires et stables qui bénéficient pleinement d'un modèle relationnel. MySQL garantit l'intégrité référentielle, offre de bonnes performances pour les opérations de lecture/écriture classiques, et s'intègre nativement avec Prisma.
+Contrairement à une base NoSQL comme MongoDB, qui aurait introduit une complexité inutile pour gérer des relations entre entités, MySQL est parfaitement adapté à ce type de domaine. PostgreSQL aurait constitué une alternative sérieuse, particulièrement pour ses types avancés et ses capacités analytiques, mais MySQL répond pleinement aux besoins du MVP et présente une courbe de prise en main plus directe.
+
+Hébergement
+Phase prototype
+Durant la phase de prototype, le VPS mis à disposition par l’école constitue la solution la plus pertinente. Il offre un environnement contrôlé pour développer et tester l’application sans engendrer de coût supplémentaire, tout en donnant un accès direct aux ressources nécessaires à la validation des fonctionnalités clés. Les capacités de ce serveur sont largement suffisantes pour cette étape, et ce choix permet d’éviter les contraintes logistiques et financières liées à un hébergement externe pendant la phase de développement.
+
+Phase de production
+Pour la mise en production, Infomaniak s’impose comme le meilleur compromis. Ce fournisseur suisse héberge ses infrastructures en Europe et propose un support technique en français, ce qui simplifie la gestion des incidents. Son interface d’administration accessible et sa politique tarifaire maîtrisée le distinguent de solutions comme AWS ou OVHcloud, dont la complexité et les coûts variables sont peu adaptés à un projet en phase de croissance.
+La possibilité de monter en charge progressivement permet d’anticiper une augmentation du trafic sans surdimensionner l’infrastructure dès le départ. Enfin, la localisation géographique des serveurs garantit des temps de réponse optimaux pour les utilisateurs français et européens, ce qui est déterminant pour une application mobile où la fluidité conditionne directement l’expérience utilisateur
+
+
+Conception fonctionnelle
+Pour chaque fonctionnalité du MVP, nous détaillons ci-après le problème qu'elle résout et les raisons qui justifient son inclusion dans le périmètre initial.
+
+Gestion de compte et connexion
+Sans persistance des données, chaque session repart de zéro : l'utilisateur perd ses recommandations, son bièrodex et ses notations, ce qui rend l'application sans valeur sur la durée. La gestion de compte est le socle qui donne du sens à toutes les autres fonctionnalités.
+Elle permet de conserver le profil constitué lors du quiz, les bières consignées dans le bièrodex et les notations laissées par l'utilisateur. C'est ce qui permet à la recommandation de s'affiner dans le temps et à l'utilisateur de retrouver une expérience cohérente d'une session à l'autre.
+
+Quiz d'orientation
+Sans information initiale sur les préférences de l'utilisateur, l'application est incapable de proposer des recommandations pertinentes dès la première ouverture. Face à un catalogue de bières vierge de tout contexte, la majorité des utilisateurs se trouvent démunis et quittent l'application sans engagement.
+Le quiz répond à ce problème en guidant l'utilisateur à travers ses préférences gustatives : intensité d'amertume, goût pour les arômes fruités, torréfiés, floraux ou épicés, appétence pour des bières légères ou corsées. Chaque réponse est liée à des profils de styles brassicoles qui permettent de construire un vecteur de préférences initial et de calculer un premier score de correspondance avec les bières disponibles, avant même que l'utilisateur ait exploré le catalogue.
+
+
+Fiches bières et brasseries
+Pour qu'un utilisateur puisse se projeter dans une bière et décider de la goûter, il a besoin d'informations concrètes : quels arômes peut-il attendre, quelle est l'intensité, avec quel plat peut-il l'associer ? Sans fiche détaillée, la recommandation perd sa valeur : l'utilisateur reçoit un nom sans contexte, sans moyen de comprendre pourquoi cette bière lui correspond.
+La fiche bière centralise le descriptif organoleptique, les accords mets-bière, la note moyenne et le lien vers la brasserie. La fiche brasserie apporte un contexte historique et géographique qui renforce la dimension culturelle de la découverte brassicole. Pour ce MVP, les fiches seront alimentées manuellement, des enrichissements (photos, vidéos, disponibilité locale) sont prévus dans les versions ultérieures.
+
+Le Bièrodex
+La découverte brassicole est une démarche progressive qui s'inscrit dans la durée. Sans espace pour consigner ses expériences, l'utilisateur n'a aucun moyen de retrouver une bière appréciée, de mesurer sa progression ou de s'appuyer sur son historique pour affiner ses goûts.
+Le Bièrodex remplit ce rôle de carnet de dégustation personnel. Il permet à l'utilisateur de marquer les bières déjà goûtées et de les noter, constituant ainsi une collection qui grandit avec son usage.
+
+Recherche basique
+La recommandation couvre la majorité des parcours utilisateur, mais pas tous. Certains arrivent avec une bière ou une brasserie déjà en tête — suite à une conversation, une lecture ou une dégustation récente — et souhaitent y accéder directement sans passer par le système de recommandation.
+La recherche textuelle leur offre ce chemin d'accès direct. Elle constitue également un filet de sécurité pour les cas où la recommandation n'aurait pas encore cerné les préférences de l'utilisateur. Pour ce MVP, la recherche reste volontairement simple (par nom de bière ou de brasserie) ; les filtres avancés (style, amertume, degré, région) feront l'objet d'une itération ultérieure.

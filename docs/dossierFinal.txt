@@ -1,0 +1,1209 @@
+  1. Présentation du projet
+     1.1 Contexte et genèse
+     1.2 Objectifs fonctionnels et utilisateurs cibles
+     1.3 Périmètre de la réalisation (MVP)
+
+  2. Présentation technique
+     2.1 Choix de la stack comparaison et justifications
+     2.2 Vue d'ensemble de l'architecture
+
+  3. Gestion de projet et outils collaboratifs
+     3.1 Méthode de développement
+     3.2 Planification et suivi des tâches
+     3.3 Gestion de versions et flux de travail Git
+
+  4. Analyse des besoins et conception
+     4.1 Recueil et couverture des exigences
+     4.2 Contribution à la conception des maquettes
+     4.3 Dossier de conception
+
+  5. Architecture logicielle
+     5.1 Architecture multicouche vue d'ensemble
+     5.2 La couche Routage et validation
+     5.3 La couche Controller
+     5.4 La couche Service logique métier
+     5.5 La couche Accès aux données (Prisma + MySQL)
+     5.6 Les couches transverses sécurité et réponses uniformes
+     5.7 Éco-conception intégrée à l'architecture
+
+  6. Base de données
+     6.1 Modélisation conceptuelle
+     6.2 Du MLD au schéma physique Prisma
+     6.3 Règles de nommage
+     6.4 Intégrité, sécurité et confidentialité des données
+     6.5 Base de données de test et stratégie de restauration
+
+  7. Tests
+     7.1 Stratégie et plan de tests
+     7.2 Environnement de tests
+     7.3 Tests unitaires logique métier en isolation
+     7.4 Tests d'intégration la chaîne HTTP complète
+     7.5 Tests de sécurité couverture OWASP
+     7.6 Résultats, couverture et automatisation
+     7.7 Tests E2E prévus, non réalisés par contrainte de périmètre
+
+  Annexes
+
+
+================================================================================
+1. PRÉSENTATION DU PROJET
+================================================================================
+
+
+1.1 Contexte et genèse
+──────────────────────
+
+Le projet Zythonomie est le projet fil rouge inter section poursuit par tout les étudiants en troisieme année de bachelor.
+Dans ce projet qui comprend du marketing, de la création digital, du web design et biensur du developpement, nous avions pour objectif de 
+créé une application qui soit marketable et realisable. Au cours de l'annee nous avons donc réalisé le projet Zythonomie, qui est une application
+mobile de découverte et de recommandation de
+bières artisanales. Le projet est né d'un constat partagé au sein de l'équipe : un
+nombre significatif de personnes affirment ne pas aimer la bière, alors qu'elles
+n'ont en réalité jamais rencontré celle qui correspondait à leurs goûts.
+Il existe un public qui cherche à explorer la bière différemment avec plus de
+discernement, moins de quantité sans disposer d'outil adapté pour s'orienter.
+Contrairement au vin ou aux spiritueux, qui bénéficient d'applications et de
+guides de référence, la bière artisanale reste un univers peu outillé pour le
+grand public. Zythonomie se positionne sur ce vide.
+
+
+1.2 Objectifs fonctionnels et utilisateurs cibles
+──────────────────────────────────────────────────
+
+L'application repose sur trois piliers fonctionnels complémentaires.
+
+Le premier est la recommandation personnalisée. Un quiz d'orientation guide
+l'utilisateur à travers ses préférences gustatives (amertume, arômes fruités,
+torréfiés, floraux, intensité générale). Chaque réponse est pondérée et vient
+construire un vecteur de préférences. Un algorithme de compatibilité basé sur
+un produit scalaire normalisé entre ce vecteur et les caractéristiques de chaque
+bière calcule un score de correspondance et produit une liste de recommandations
+personnalisées, triées par pertinence décroissante.
+
+Le deuxième est le suivi gustatif, matérialisé par le "Zythothèque" : un carnet
+personnel dans lequel l'utilisateur consigne les bières déjà goûtées, les note,
+et constitue progressivement un profil gustatif de plus en plus précis.
+
+Le troisième est l'information brassicole : des fiches descriptives pour chaque
+bière (organoleptique, accords mets-bière, note communautaire) et chaque
+brasserie (contexte historique, localisation, catalogue).
+
+L'application cible deux profils d'utilisateurs distincts. Les néophytes et
+curieux, qui souhaitent sortir des bières industrielles sans disposer des
+connaissances nécessaires pour s'orienter seuls dans un catalogue de styles
+brassicoles. Et les amateurs avertis, qui cherchent à structurer leurs
+expériences, à consigner leurs découvertes et à affiner leurs recommandations au
+fil du temps.
+
+
+1.3 Périmètre de la réalisation (MVP)
+──────────────────────────────────────
+
+Le périmètre du MVP couvre le cœur fonctionnel de l'application, c'est-
+à-dire l'ensemble des fonctionnalités sans lesquelles la promesse centrale
+permettre à un utilisateur de trouver la bière qui lui correspond ne peut pas
+être tenue.
+
+Sont inclus dans le périmètre :
+  Gestion de compte et authentification (JWT access + refresh token)
+  Quiz d'orientation et calcul des préférences gustatives (UserCriteria)
+  Algorithme de recommandation par produit scalaire normalisé
+  Fiches bières et brasseries avec leurs liaisons
+  Zythothèque notation et collection personnelle
+  Recherche basique (par nom de bière ou de brasserie)
+  API REST complète avec documentation Swagger
+  L'interface mobile React Native 
+
+Sont explicitement hors périmètre pour cette version :
+  Le scanner de codes-barres (react-native-vision-camera)
+  La recherche avancée avec filtres multi-critères
+  Le système de badges et de gamification
+  Le back-office d'administration
+
+Cette délimitation assumée du périmètre est une décision de conception à part
+entière : elle garantit que chaque fonctionnalité livrée est complète, testée
+et documentée, plutôt que d'accumuler des demi-fonctionnalités.
+
+
+================================================================================
+2. PRÉSENTATION TECHNIQUE
+================================================================================
+
+
+2.1 Choix de la stack comparaison et justifications
+───────────────────────────────────────────────────────
+
+Le choix de chaque technologie a fait l'objet d'une évaluation comparative
+documentée dans le cahier des charges et le rapport MVP. Les décisions ne relèvent
+pas de préférences par défaut mais d'arbitrages explicites face à des alternatives
+identifiées.
+
+─── Frontend : React Native + Expo ───────────────────────────────────────────
+
+Trois options ont été évaluées pour le frontend mobile : React Native, Flutter
+et Cordova. Cordova, fondé sur une WebView HTML/CSS/JS, a été éliminé dès
+l'analyse préliminaire en raison de ses limitations de performance sur les
+fonctionnalités natives (caméra pour le scanner, animations, rendu), incompatibles
+avec les exigences de fluidité de l'application.
+
+Flutter et React Native se différencient sur deux axes : le langage (Dart vs
+JavaScript/TypeScript) et l'écosystème. React Native a été retenu pour trois
+raisons déterminantes. Premièrement, la cohérence de la stack : utiliser
+JavaScript/TypeScript sur l'ensemble du projet (frontend + backend) réduit la
+charge cognitive, facilite le partage de types et de logique de validation entre
+les deux couches, et accélère la montée en compétence. Deuxièmement, l'adoption
+d'Expo simplifie considérablement la phase de démarrage en abstrayant la
+configuration native d'Android et iOS, et propose des outils intégrés pour le
+build et la distribution (EAS Build). Troisièmement, l'écosystème React Native
+reste plus large en termes de librairies UI et d'intégrations tierces, ce qui
+est particulièrement pertinent pour un projet dont le catalogue de fonctionnalités
+est appelé à s'étendre.
+
+─── Backend : Node.js + Express 5 ───────────────────────────────────────────
+
+Deux approches ont été comparées : Node.js avec Express et Firebase Functions.
+Firebase Functions, architecture serverless managée, a été écartée pour deux
+raisons. Elle crée une dépendance à l'écosystème Firebase qui contraint fortement
+les choix futurs et la portabilité. Surtout, elle s'avère limitante dès lors que
+la logique métier gagne en complexité ce qui est précisément le cas d'un
+algorithme de recommandation par produit scalaire, de la gestion des sessions de
+quiz ou du contrôle d'accès RBAC.
+
+Node.js avec Express 5 offre un contrôle total sur l'architecture de l'API.
+Combiné à TypeScript, il apporte un typage statique qui prévient une classe entière
+d'erreurs à la compilation, documente le contrat des fonctions, et rend la base
+de code maintenable à mesure qu'elle croît. Express 5 introduit également la
+gestion native des rejets de promesses dans les handlers asynchrones, ce qui
+supprime une source classique de bugs dans les API Node.js.
+
+La comparaison avec Symfony a également été abordée. Si Symfony est un cadre
+mature et structurant, il introduit une rupture technologique dans une stack
+full-JavaScript et implique une courbe d'apprentissage supplémentaire sans
+bénéfice proportionnel pour une API REST de cette envergure.
+
+─── Base de données : MySQL ──────────────────────────────────────────────────
+
+MySQL a été préféré à MongoDB (ou Firestore) pour une raison structurelle : les
+données manipulées par Zythonomie sont fortement relationnelles. Une bière est
+liée à une brasserie, à des catégories, à des critères gustatifs, à des notes
+d'utilisateurs, à des recommandations. Un modèle NoSQL document-orienté aurait
+contraint à dénormaliser ces relations ou à gérer manuellement des jointures
+applicatives, deux approches qui ajoutent de la complexité sans valeur ajoutée
+dans ce contexte.
+
+MySQL garantit l'intégrité référentielle au niveau du moteur de base de données,
+offre des performances démontrées pour les lectures/écritures classiques d'une
+API mobile, et s'intègre nativement avec Prisma. PostgreSQL aurait constitué une
+alternative sérieuse, notamment pour ses types avancés et ses capacités
+analytiques, mais MySQL répond pleinement aux besoins du MVP et présente une
+prise en main plus directe.
+
+─── ORM : Prisma ─────────────────────────────────────────────────────────────
+
+Prisma a été retenu face à des alternatives comme Sequelize ou TypeORM. Le
+typage fort et intégral du client Prisma est généré automatiquement à partir du
+schéma, avec des types TypeScript précis pour chaque modèle et chaque résultat
+de requête élimine les incohérences entre la structure de la base et le code
+applicatif. Le système de migrations versionné garantit la traçabilité de chaque
+évolution du schéma. Enfin, Prisma Studio offre une interface visuelle pour
+inspecter et manipuler les données de développement sans ligne de commande.
+
+─── Tests : Vitest + Supertest ───────────────────────────────────────────────
+
+Le cahier des charges mentionnait Jest comme outil de test. Après analyse, le
+choix s'est porté sur Vitest. Vitest est natif TypeScript, ne requiert aucune
+configuration supplémentaire, et son temps de démarrage est
+significativement plus court que Jest. Il partage la syntaxe de Jest (describe,
+it, expect, vi.fn()) ce qui garantit une courbe d'apprentissage nulle. Supertest
+complète ce dispositif pour les tests d'intégration : il permet d'envoyer de
+vraies requêtes HTTP à l'instance Express sans démarrer de serveur réseau, ce qui
+maintient les tests rapides et déterministes.
+
+─── Authentification : JWT ───────────────────────────────────────────────────
+
+JWT a été retenu face à Firebase Auth et OAuth 2.0. Firebase Auth introduit une
+dépendance à l'écosystème Firebase, incompatible avec la stratégie d'hébergement
+choisie (VPS école puis Infomaniak). OAuth 2.0 est pertinent pour des scénarios
+d'authentification tierce (connexion avec Google, Apple) mais ajoute une
+complexité disproportionnée pour une authentification applicative propre.
+Les JWT offrent une solution décentralisée, sans état serveur, intégrant
+nativement les claims de rôle nécessaires au contrôle d'accès RBAC.
+
+─── Hébergement ──────────────────────────────────────────────────────────────
+
+L'analyse comparative des hébergeurs (Infomaniak, Hostinger, AWS Lightsail,
+OVHcloud) a conduit à une stratégie en deux temps : le VPS de l'école pour la
+phase prototype sans surcoût, environnement contrôlé, suffisant pour valider
+les fonctionnalités et Infomaniak pour la mise en production, retenu pour ses
+serveurs européens, son support en français, son interface accessible et son
+rapport qualité/prix adapté à un projet en croissance progressive.
+
+─── Tableau de synthèse de la stack ──────────────────────────────────────────
+
+  Couche           │ Technologie retenue        │ Alternative écartée
+  ─────────────────┼────────────────────────────┼──────────────────────────────
+  Frontend         │ React Native + Expo        │ Flutter, Cordova
+  Backend          │ Node.js + Express 5 + TS   │ Firebase Functions, Symfony
+  Base de données  │ MySQL 8                    │ MongoDB, PostgreSQL
+  ORM              │ Prisma 6                   │ Sequelize, TypeORM
+  Auth             │ JWT (access + refresh)     │ Firebase Auth, OAuth 2.0
+  Tests            │ Vitest + Supertest         │ Jest, Mocha
+  Documentation    │ Swagger (OpenAPI 3.0)      │ Postman, Redoc
+  Hébergement      │ VPS école → Infomaniak     │ AWS Lightsail, OVHcloud
+
+[Annexe A Capture : README.md / tableau stack ]
+
+
+2.2 Vue d'ensemble de l'architecture
+──────────────────────────────────────
+
+L'architecture de Zythonomie est une architecture multicouche répartie. Le
+frontend React Native communique exclusivement avec le backend via l'API REST.
+Le backend est découpé en couches techniques dont les responsabilités sont
+strictement délimitées. La base de données est le seul point de persistance.
+
+schema architecture de Zythonomie illustré
+
+Cette architecture est détaillée section par section dans la Partie 5 du présent
+document.
+
+
+================================================================================
+3. GESTION DE PROJET ET OUTILS COLLABORATIFS
+================================================================================
+
+
+3.1 Méthode de développement
+──────────────────────────────
+
+La méthode adoptée est une approche itérative et incrémentale, structurée en
+phases séquentielles. Chaque phase correspond à un périmètre fonctionnel ou
+technique délimité, et ne démarre qu'une fois la précédente validée selon une
+Definition of Done explicite. Cette approche, inspirée de l'Agile sans en adopter
+le formalisme complet (sprints Scrum), permet de livrer des incréments fonctionnels
+stables à chaque étape, de valider les choix d'architecture tôt, et d'ajuster la
+priorité des développements en fonction des retours.
+
+Le projet est découpé en dix phases allant de la fonctionnalité de recommandation
+complète (Phase 1) jusqu'au README et à l'onboarding (Phase 10), en passant par
+les tests automatisés (Phase 2), l'authentification (Phase 3), les rôles et
+permissions (Phase 4), la pagination (Phase 5), la sécurité et qualité (Phase 6),
+la documentation Swagger (Phase 7), la CI/CD GitHub Actions (Phase 8) et le
+frontend React Native (Phase 9). Cette séquence n'est pas arbitraire : les phases
+techniques fondatrices (authentification, tests) sont placées avant les phases qui
+en dépendent (rôles, CI/CD, frontend).
+
+
+3.2 Planification et suivi des tâches
+───────────────────────────────────────
+
+La planification s'est articulée autour de deux niveaux de granularité
+complémentaires.
+
+Au niveau macroscopique, le fichier PROJECT.md tient lieu de document de
+planification stratégique. Il centralise la description de chaque phase, les
+tâches techniques associées, les critères d'acceptation (Definition of Done) et
+les décisions d'architecture. Ce document a été rédigé en amont du développement
+et sert de référence tout au long du projet : chaque décision de conception (choix
+de l'algorithme de recommandation, stratégie de soft delete, format des réponses
+API) y est tracée avec sa justification.
+
+Au niveau opérationnel, Notion a été utilisé pour le suivi quotidien des tâches
+au sein de l'équipe : création de tache, attribution, statut
+(à faire / en cours / terminé), et identification des dépendances entre tâches.
+Le recoupement régulier entre le plan PROJECT.md et l'avancement réel dans Notion
+permettait d'identifier les écarts et d'ajuster les priorités en conséquence.
+
+[Annexe B Capture : tableau Notion vue Kanban]
+[Annexe C Capture : extrait PROJECT.md Definition of Done Phase 3]
+
+
+3.3 Gestion de versions et flux de travail Git
+────────────────────────────────────────────────
+
+La gestion de versions repose sur Git avec un dépôt centralisé sur GitHub. Le
+flux de travail adopté est une convention de branches par fonctionnalité : chaque
+nouvelle fonctionnalité ou correction fait l'objet d'une branche dédiée créée à
+partir de la branche principale, avec un nommage normalisé selon trois préfixes :
+
+  feature/<nom>   nouvelle fonctionnalité
+  fix/<nom>       correction de bug
+  chore/<nom>     tâche technique (refactoring, dépendances, config)
+
+Une fois le développement terminé, une Pull Request est ouverte sur GitHub, ce qui
+constitue la porte d'entrée obligatoire avant toute fusion. Cette pratique, bien
+que mise en œuvre dans un contexte ou j'étais seul developpeur, ancre dès le départ les
+réflexes professionnels de revue de code et de traçabilité des changements. Chaque
+commit porte un message concis et impératif décrivant l'intention du changement,
+ce qui facilite la lecture de l'historique et l'identification de régressions.
+
+[Annexe D Capture : GitHub liste des Pull Requests ou graphe de branches]
+
+
+================================================================================
+4. ANALYSE DES BESOINS ET CONCEPTION
+================================================================================
+
+
+4.1 Recueil et couverture des exigences
+─────────────────────────────────────────
+
+Le recueil des besoins a reposé sur deux sources complémentaires : une étude
+quantitative menée de décembre 2025 à janvier 2026 sur 71 répondants, et des
+entretiens qualitatifs permettant d'affiner la segmentation des profils
+utilisateurs. Ces données ont alimenté la rédaction du cahier des charges, qui
+formalise les exigences fonctionnelles et non fonctionnelles de l'application.
+
+Ma contribution à cette phase a porté sur la structuration des fonctionnalités à
+partir des besoins identifiés, et sur la délimitation du périmètre MVP. Cette
+délimitation est un exercice de priorisation : il s'agit de distinguer ce qui
+constitue le cœur de valeur de l'application (quiz → recommandation, Zythothèque,
+fiches) de ce qui peut faire l'objet d'itérations ultérieures (scanner,
+gamification, filtres avancés). Le tableau ci-dessous illustre la traçabilité
+entre exigences du cahier des charges et modules implémentés :
+
+  Exigence CDC                              │ Module backend
+  ──────────────────────────────────────────┼──────────────────────────────────
+  Quiz d'orientation et recommandation      │ Quiz, QuizzSession, Recommendation
+  Fiches bières avec descriptif organolep.  │ Beer, Category, Pairing, Brewery
+  Compte utilisateur et authentification    │ User, Auth (JWT)
+  Zythothèque notation et collection        │ Rating
+  Recherche et filtres                      │ Beer (filtres sur GET /api/beers)
+  Sécurité JWT, mots de passe hashés        │ Auth, middleware authenticate
+  Performance requêtes optimisées           │ Select explicite Prisma, pagination
+  Documentation API                         │ Swagger UI (/api-docs)
+
+L'ensemble des exigences fonctionnelles retenues pour le MVP sont couvertes par
+un module backend implémenté, testé et documenté.
+
+
+4.2 Contribution à la conception des maquettes
+────────────────────────────────────────────────
+
+La conception des maquettes a été un travail collaboratif au sein de l'équipe.
+Ma contribution s'est concentrée sur la dimension structurelle et fonctionnelle
+plutôt que graphique : définir les parcours utilisateur, la logique de navigation
+entre écrans, et les cas limites à couvrir dans chaque flux.
+
+Cette contribution s'est matérialisée sous plusieurs formes. Des diagrammes
+d'action UML ont été produits pour les flux principaux :
+authentification, parcours de quiz, consultation d'une recommandation, ajout au
+Zythothèque afin de formaliser les enchaînements d'actions et les branchements
+conditionnels avant la réalisation graphique dans Figma. Un plan de l'application
+décrivant l'arborescence des écrans et leurs relations a également été formalisé,
+ainsi que des scénarios de parcours utilisateur décrivant les chemins nominaux
+et alternatifs pour deux cas, happy path et unhappy path.
+
+Ces documents ont servi de référence à la réalisation des maquettes Figma et
+garantissent que la conception graphique répond à des cas d'usage concrets plutôt
+qu'à une intuition visuelle.
+
+[Annexe E Diagramme d'action : parcours quiz (start → answer → complete → recommandations)]
+[Annexe F Plan de l'application : arborescence des écrans]
+[Annexe G Captures Figma : écrans principaux (Login, Home, Quiz, Recommandations)]
+
+
+4.3 Dossier de conception
+───────────────────────────
+
+La traçabilité de la démarche de conception est assurée par le fichier PROJECT.md,
+qui constitue le dossier de conception du projet. Il documente la vision
+fonctionnelle, les décisions d'architecture et leurs justifications, la roadmap
+en phases séquentielles avec Definition of Done pour chacune, les conventions de
+code, et les décisions techniques structurantes (algorithme de recommandation,
+stratégie d'authentification, politique de soft delete).
+
+Ce document est vivant : il a été enrichi tout au long du développement, chaque
+décision significative y étant tracée avec son contexte et sa justification. Cela
+permet à tout nouveau contributeur de comprendre non seulement ce qui a été fait,
+mais pourquoi.
+
+
+================================================================================
+5. ARCHITECTURE LOGICIELLE
+================================================================================
+
+
+5.1 Architecture multicouche vue d'ensemble
+───────────────────────────────────────────────
+
+L'architecture de Zythonomie suit le pattern en couches classique des API REST
+modernes, décliné en quatre niveaux à responsabilité unique : Routes, Controllers,
+Services, et Accès aux données via Prisma. Ce découpage est complété par des
+couches transverses middlewares et utilitaires qui assurent la cohérence des
+préoccupations transversales (authentification, validation, gestion d'erreurs,
+pagination) sans les disperser dans la logique métier.
+
+Ce pattern présente trois avantages structurels. Premièrement, la testabilité :
+la logique métier étant isolée dans les Services, il est possible de la tester
+unitairement sans infrastructure HTTP ni base de données réelle. Deuxièmement,
+la maintenabilité : une évolution du contrat API (changement de route, de format
+de réponse) n'impacte pas la logique métier. Troisièmement, la séparation des
+responsabilités de sécurité : chaque couche sait ce qu'elle doit valider, sans
+que cette logique ne se disperse.
+
+  Flux d'une requête HTTP entrant dans l'application :
+
+  Requête HTTP
+       │
+       ▼
+  ┌────────────────────────────────────────────────────────────────┐
+  │  Middlewares globaux (app.ts)                                   │
+  │  helmet() · morgan() · cors() · express.json()                  │
+  └─────────────────────────┬──────────────────────────────────────┘
+                            │
+       ▼
+  ┌────────────────────────────────────────────────────────────────┐
+  │  Router (*.routes.ts)                                          │
+  │  Middlewares de route : authenticate · requireAdmin             │
+  │                        requireOwnerOrAdmin · validate(schema)   │
+  └─────────────────────────┬──────────────────────────────────────┘
+                            │
+       ▼
+  ┌────────────────────────────────────────────────────────────────┐
+  │  Controller (*.controller.ts)                                  │
+  │  Extraction des params · Appel service · sendSuccess()          │
+  └─────────────────────────┬──────────────────────────────────────┘
+                            │
+       ▼
+  ┌────────────────────────────────────────────────────────────────┐
+  │  Service (*.service.ts)                                        │
+  │  Règles métier · Accès Prisma · throw HttpError si anomalie     │
+  └─────────────────────────┬──────────────────────────────────────┘
+                            │
+       ▼
+  ┌────────────────────────────────────────────────────────────────┐
+  │  Prisma Client → MySQL                                         │
+  └────────────────────────────────────────────────────────────────┘
+                            │
+  Erreur non capturée ◄──────┤
+       │                    │
+       ▼                    ▼
+  errorHandler()        sendSuccess()
+  (middleware global)
+
+
+5.2 La couche Routage et validation
+─────────────────────────────────────
+
+Les fichiers de routes (src/routes/) ont trois responsabilités distinctes : déclarer
+les endpoints, appliquer la chaîne de middlewares de sécurité appropriée, et définir
+le schéma de validation Zod.
+
+Aucune logique métier ne se trouve dans cette couche. L'extrait suivant, tiré du
+fichier auth.routes.ts, illustre ce principe :
+
+  router.post('/login',
+    loginLimiter,             // rate limiting (5 req/min/IP)
+    validate(loginSchema),    // validation Zod du body
+    loginHandler              // controller
+  );
+
+Le middleware validate() est générique et réutilisable. Il accepte un schéma Zod
+et une source (body, params, query), valide les données entrantes, et en cas
+d'échec retourne immédiatement une réponse 400 structurée avec le détail des
+champs invalides :
+
+TODO insominia
+
+  {
+    "success": false,
+    "error": {
+      "code": "VALIDATION_ERROR",
+      "message": "Erreur de validation",
+      "details": [
+        { "field": "mail", "message": "Format d'e-mail invalide" },
+        { "field": "password", "message": "Minimum 8 caractères" }
+      ]
+    }
+  }
+
+Cette validation systématique en amont de la chaîne est un premier rempart contre
+les entrées malformées ou malveillantes. La donnée qui parvient au controller est
+garantie conforme au schéma défini.
+
+[Annexe H Capture : extrait beer.routes.ts enchaînement des middlewares]
+[Annexe I Capture : middleware validate.ts code complet]
+
+
+5.3 La couche Controller
+─────────────────────────
+
+Le controller est une couche de traduction : il extrait les données validées de
+la requête HTTP (params, query, body), appelle le service correspondant, et formate
+la réponse via sendSuccess(). Il ne contient aucune logique métier cette règle
+est absolue dans ce projet.
+
+La décision de ne confier aucune logique au controller a une conséquence directe
+sur la testabilité : les services peuvent être testés unitairement sans contexte
+HTTP. Si une logique métier se trouvait dans un controller, il faudrait simuler
+une requête Express complète pour la tester.
+
+Exemple représentatif (beer.controller.ts) :
+
+  export async function getBeerById(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const beer = await findBeerById(Number(id));
+    sendSuccess(res, 200, beer);
+  }
+
+La gestion des erreurs n'est pas traitée dans le controller : si findBeerById()
+lève un HttpError (404 BEER_NOT_FOUND, par exemple), l'erreur remonte la chaîne
+et est capturée par le middleware global errorHandler.
+
+[Annexe J Capture : extrait beer.controller.ts]
+
+
+5.4 La couche Service, logique métier
+────────────────────────────────────────
+
+Les services constituent le cœur de l'application. Toute règle métier, toute
+contrainte d'intégrité, tout calcul réside dans cette couche. Un service ne reçoit
+jamais un objet Request Express : il travaille avec des types TypeScript purs.
+
+Plusieurs patterns méritent d'être détaillés ici, car ils illustrent des décisions
+d'architecture ayant un impact direct sur la fiabilité et la sécurité.
+
+─── Pattern : throw HttpError ────────────────────────────────────────────────
+
+Toutes les anomalies métier sont signalées par une exception typée HttpError,
+définie dans src/lib/http-error.ts :
+
+  export class HttpError extends Error {
+    public readonly statusCode: number;
+    public readonly code: string;
+    public readonly details?: unknown;
+
+    constructor(statusCode: number, code: string, message: string, details?: unknown) {
+      super(message);
+      this.statusCode = statusCode;
+      this.code = code;
+      this.details = details;
+    }
+  }
+
+Ce pattern garantit qu'aucun service ne retourne un objet "erreur silencieuse" ou
+ne renvoie null pour signaler une ressource introuvable. Le code d'erreur métier
+(USER_NOT_FOUND, RATING_ALREADY_EXISTS, INVALID_SCORE, etc.) est porté par
+l'exception elle-même, et non interprété après coup par le controller. Le
+middleware errorHandler intercepte toutes ces exceptions et produit une réponse
+JSON uniforme :
+
+TODO insominia
+
+  {
+    "success": false,
+    "error": {
+      "code": "BEER_NOT_FOUND",
+      "message": "Bière introuvable"
+    }
+  }
+
+─── Pattern : select explicite Prisma ───────────────────────────────────────
+
+Tous les appels Prisma utilisent un bloc select explicite. Jamais de findMany()
+sans select, jamais de champ password dans les données retournées. Cette règle est
+appliquée systématiquement dans l'ensemble des services. Elle remplit un double
+rôle : la sécurité (le mot de passe ne peut pas être exposé par inadvertance) et
+l'éco-conception (seules les données nécessaires sont transférées de la base vers
+l'application).
+
+  const user = await prisma.user.findUnique({
+    where: { id, deleted_at: null },
+    select: {
+      id: true,
+      name: true,
+      firstname: true,
+      mail: true,
+      role: true,
+      birthday: true,
+      // password : absent intentionnellement
+    },
+  });
+
+─── Exemple avancé : l'algorithme de recommandation ─────────────────────────
+
+L'algorithme de recommandation est le service le plus complexe du projet. Il
+illustre particulièrement bien la séparation entre logique métier et accès aux
+données.
+
+Le principe est un produit scalaire normalisé entre deux vecteurs : le vecteur
+de préférences de l'utilisateur (UserCriteria construit à partir des réponses
+au quiz) et le vecteur de caractéristiques de chaque bière (BeerCriteria). Pour
+chaque bière active (non soft-deleted), le service récupère les critères
+aux deux vecteurs, calcule la somme des produits terme à terme, et normalise par
+le nombre de critères :
+
+  score = Σ(score_user_i × score_beer_i) / nombre_critères
+
+Ce calcul est entièrement réalisé en mémoire dans le service, après avoir chargé
+les données nécessaires via deux requêtes Prisma ciblées. Les résultats sont
+triés par score décroissant puis persistés dans la table BeerRecommendedUser via
+une transaction atomique (delete all + bulk create). Cette transaction garantit
+que la table de recommandations est toujours dans un état cohérent : on ne peut
+pas observer un état intermédiaire avec d'anciennes et de nouvelles recommandations
+mélangées.
+
+Le test unitaire de cet algorithme vérifie sa correction mathématique sur un
+exemple numérique construit à la main : l'utilisateur a les scores c1=4, c2=2,
+la bière a les scores c1=3, c2=5. Le résultat attendu est (4×3 + 2×5) / 2 = 11.
+Ce type de test garantit qu'une régression sur le calcul sera
+immédiatement détectée.
+
+[Annexe K Capture : extrait recommendation.service.ts fonction computeAndStoreRecommendations]
+[Annexe L Capture : extrait recommendation.service.test.ts test du produit scalaire]
+
+
+5.5 La couche Accès aux données Prisma + MySQL
+─────────────────────────────────────────────────
+
+Prisma agit comme couche d'abstraction entre la logique applicative et la base de
+données. Le client Prisma est instancié comme singleton (src/lib/prisma.ts) pour
+éviter la multiplication des connexions sur une même instance Node.js, particulière-
+ment critique dans l'environnement de test où des centaines de requêtes peuvent
+être émises en parallèle.
+
+La gestion des erreurs de contrainte de base de données est normalisée au niveau
+des services selon deux stratégies complémentaires. Les contraintes d'unicité
+fonctionnelles (ex : une seule note par couple utilisateur-bière) sont vérifiées
+applicativement par un findFirst avant l'insert, ce qui permet de lever une
+HttpError 409 avec un message métier précis sans dépendre du comportement de la
+base. Les violations de clé étrangère lors des suppressions (P2003/P2014) sont
+elles capturées via un catch Prisma, car elles ne peuvent être anticipées qu'au
+moment de l'opération :
+
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      (error.code === 'P2003' || error.code === 'P2014')
+    ) {
+      throw new HttpError(409, 'QUESTION_IN_USE',
+        'Cette question est référencée et ne peut pas être supprimée');
+    }
+    throw error;
+  }
+
+─── Pagination générique ─────────────────────────────────────────────────────
+
+Toutes les listes de l'API sont paginées via un helper générique (src/lib/paginate.ts)
+plutôt qu'une pagination ad-hoc dans chaque service. Ce helper effectue deux
+requêtes en parallèle (findMany avec skip/take, et count), et retourne un objet
+PaginatedResult<T> uniforme :
+  {
+    "data": [...],
+    "meta": {
+      "page": 1,
+      "limit": 20,
+      "total": 47,
+      "totalPages": 3
+    }
+  }
+
+Cette uniformité est une décision d'éco-conception et un soucis de performance : les clients ne reçoivent
+jamais plus de données que ce qu'ils ont demandé. Egalement sans pagination, une requête GET /api/beers sur un catalogue de
+plusieurs milliers de bières retournerait l'intégralité des données en une seule
+réponse.
+
+[Annexe M Capture : src/lib/paginate.ts code complet]
+
+
+5.6 Les couches transverses sécurité et réponses uniformes
+─────────────────────────────────────────────────────────────
+
+─── Middleware authenticate ──────────────────────────────────────────────────
+
+Le middleware d'authentification JWT (src/middleware/authenticate.ts) illustre
+la stratégie de sécurité transverse du projet. Il intercepte chaque requête
+destinée à une route protégée, extrait et vérifie le token Bearer, puis pose un
+objet req.user = { id, role } sur la requête. Les routes en aval n'ont plus qu'à
+lire req.user sans se préoccuper de l'authentification.
+
+Trois cas d'erreur sont distingués et produisent des codes métier différents :
+
+  Token absent ou format invalide     → 401 UNAUTHORIZED
+  Token expiré                        → 401 TOKEN_EXPIRED
+  Token invalide (signature erronée)  → 401 INVALID_TOKEN
+
+Cette granularité permet au client mobile de distinguer un utilisateur non
+connecté (redirection vers le login) d'un token simplement expiré (tentative
+silencieuse de refresh avant de redemander une connexion).
+
+─── Middleware requireAdmin et requireOwnerOrAdmin ───────────────────────────
+
+Le contrôle d'accès RBAC est implémenté via deux middlewares distincts, qui
+s'appuient tous deux sur req.user posé par authenticate :
+
+  requireAdmin : refuse les requêtes dont req.user.role !== 'ADMIN' (→ 403 FORBIDDEN)
+  requireOwnerOrAdmin : accepte si l'utilisateur est ADMIN, ou si req.params.userId
+                        correspond à req.user.id (propriété de la ressource)
+
+Ce dernier middleware protège les routes sensibles où un utilisateur ne doit
+accéder qu'à ses propres données (ses recommandations, sa session de quiz, son profil). 
+Un utilisateur dont le role est USER ne peut pas lire les recommandations d'un autre
+utilisateur ce cas est couvert par un test de sécurité dédié (voir Partie 7).
+
+─── Contrat de réponse uniforme ─────────────────────────────────────────────
+
+Toutes les réponses de l'API succès comme erreurs respectent le contrat
+ApiResponse<T> défini dans src/types/api.ts, via deux helpers (src/lib/response.ts) :
+
+  sendSuccess(res, 201, data)   → { "success": true,  "data": {...} }
+  sendError(res, 404, errBody)  → { "success": false, "error": {...} }
+
+Cette uniformité garantit que le client mobile peut traiter toutes les réponses
+de façon homogène, sans cas particulier selon l'endpoint.
+
+[Annexe N Capture : middleware authenticate.ts]
+[Annexe O Capture : middleware require-owner-or-admin.ts]
+[Annexe P Capture : src/lib/response.ts + exemple de réponse API dans Swagger UI]
+
+TODO api Swagger
+================================================================================
+6. BASE DE DONNÉES
+================================================================================
+
+
+6.1 Modélisation conceptuelle
+───────────────────────────────
+
+Le modèle conceptuel de données de Zythonomie comprend 17 entités organisées
+autour de quatre domaines fonctionnels.
+
+Le domaine Catalogue regroupe Beer, Brewery, Category et Pairing. Beer est
+l'entité centrale du catalogue. Elle est liée à Brewery via une table de liaison
+BeerByBrewery (relation N:M, car une bière peut être co-produite par plusieurs
+brasseries) et à Category via BeerByCategory (relation N:M, car une bière peut
+appartenir à plusieurs catégories). Category implémente
+une auto-référence pour la hiérarchie de styles (une IPA West Coast est une
+sous-catégorie d'IPA). Pairing décrit les accords mets-bière et est lié à Category.
+
+Le domaine Utilisateur regroupe User, Rating, RefreshToken et BeerRecommendedUser.
+User est lié à Rating (une note par couple user-bière, contrainte d'unicité
+appliquée en DB et en logique service), à BeerRecommendedUser (les recommandations
+calculées par l'algorithme), et à RefreshToken (tokens de renouvellement JWT stockés
+en base pour permettre la révocation).
+
+Le domaine Quiz regroupe Quizz, QuizzQuestion, QuestionChoice et QuizzSession.
+QuizzSession est l'entité centrale de ce domaine : elle matérialise la progression
+d'un utilisateur dans un quiz, avec un statut (IN_PROGRESS, COMPLETED, ABANDONED)
+et les SessionAnswer liées à chaque réponse.
+
+Le domaine Profil gustatif regroupe Criterion, UserCriteria et BeerCriteria.
+Criterion définit les axes gustatifs de l'application (ex: amertume, fruité,
+torréfié). UserCriteria et BeerCriteria associent des scores à ces critères,
+respectivement pour les utilisateurs (construits à partir des réponses au quiz)
+et pour les bières (renseignés par les administrateurs). C'est l'intersection de
+ces deux tables qui alimente l'algorithme de recommandation.
+
+[Annexe Q MCD complet 17 entités avec cardinalités]
+
+
+6.2 Du MLD au schéma physique Prisma
+───────────────────────────────────────
+
+─── Du MCD au MLD ────────────────────────────────────────────────────────────
+
+Le MLD traduit les entités et associations abstraites du MCD en tables
+relationnelles concrètes. Les associations N:M génèrent des tables de liaison
+explicites (BeerByBrewery, BeerByCategory, SessionAnswer), dont certaines portent
+des attributs propres à la relation : note_value sur SessionAnswer pondère la
+réponse dans le calcul des UserCriteria. Les associations 1:N produisent une clé
+étrangère dans la table "many", et l'auto-référence de Category est traduite par
+une clé étrangère nullable id_parent_category. Les contraintes d'unicité
+fonctionnelles sont formalisées à ce stade : (id_user, id_beer) dans Rating,
+(id_user, id_criterion) dans UserCriteria, (id_beer, id_criterion) dans BeerCriteria.
+
+─── Du MLD au MPD et périmètre MVP : une démarche in-out ────────────────────
+
+Le MPD traduit le MLD en DDL MySQL 8 : choix des types de colonnes (VARCHAR(255),
+TEXT, DATETIME), définition des index, et comportements de clé étrangère.
+
+Le MCD complet compte 17 entités, mais toutes ne sont pas nécessaires pour tenir
+la promesse centrale du MVP. Une démarche in-out a conduit à extraire un MPD
+restreint : en partant des trois piliers fonctionnels (recommandation, Zythothèque,
+fiches), on identifie les 18 tables strictement nécessaires ("in") — User, Beer,
+Brewery, Category, Pairing, BeerByBrewery, BeerByCategory, Criterion, BeerCriteria,
+UserCriteria, BeerRecommendedUser, Rating, Quizz, QuizzQuestion, QuestionChoice,
+QuizzSession, SessionAnswer, RefreshToken — et on exclut explicitement les entités
+liées aux fonctionnalités hors périmètre (badges, gamification, scanner) ("out").
+
+Cette décision est assumée : implémenter une table sans service ni endpoint associé
+introduit une dette technique sous forme de structures orphelines. Le MPD MVP est
+borné au strict nécessaire, cohérent avec l'implémentation, et documenté comme tel.
+
+─── Implémentation via Prisma ────────────────────────────────────────────────
+
+Le MPD MVP est implémenté dans le schéma Prisma, Prisma
+agit comme couche de génération : à partir du schéma déclaratif, il génère à la
+fois le DDL SQL exécuté sur MySQL et le client TypeScript fortement typé utilisé
+dans les services. Les migrations sont gérées par Prisma Migrate, qui génère les
+fichiers SQL versionés et maintient un registre d'application dans migration_lock.toml.
+Six migrations ont été appliquées de la création initiale aux évolutions successives
+(soft delete sur User, Beer et Rating, ajout des RefreshToken, contraintes d'unicité).
+
+Extrait représentatif du schéma Prisma (modèle User) :
+
+  model User {
+    id         Int       @id @default(autoincrement())
+    name       String    @db.VarChar(50)
+    firstname  String    @db.VarChar(50)
+    mail       String    @unique @db.VarChar(255)
+    password   String    @db.VarChar(255)
+    birthday   DateTime  @db.Date
+    role       Role      @default(USER)
+    deleted_at DateTime?
+
+    ratings          Rating[]
+    recommendedBeers BeerRecommendedUser[]
+    criterias        UserCriteria[]
+    quizzSessions    QuizzSession[]
+    refreshTokens    RefreshToken[]
+
+    @@map("user")
+  }
+
+Plusieurs décisions méritent d'être soulignées. Le champ deleted_at de type
+DateTime nullable implémente le soft delete : une valeur nulle signifie que
+l'enregistrement est actif, une valeur non nulle qu'il est supprimé logiquement.
+Tous les services filtrent sur deleted_at: null pour exclure les enregistrements
+supprimés sans les effacer physiquement. Le @@map("user") dissocie le nom du
+modèle Prisma (User, en PascalCase) du nom de la table MySQL (user, en snake_case),
+respectant les conventions des deux couches indépendamment.
+
+[Annexe R MLD complet]
+[Annexe R-bis MPD restreint au périmètre MVP avec périmètre in-out annoté]
+[Annexe S MPD / schéma physique MySQL]
+[Annexe T Capture : prisma/schema.prisma extrait des modèles Beer, User]
+[Annexe U Capture : liste des migrations Prisma]
+
+
+6.3 Règles de nommage
+──────────────────────
+
+Les conventions de nommage sont appliquées de façon cohérente à travers les
+deux couches techniques que sont la base de données et le code applicatif.
+
+En base de données (MySQL via Prisma) : snake_case pour les noms de tables
+(@@map) et de colonnes (@map), préfixes de clés étrangères normalisés (id_user,
+id_beer, id_criterion), noms de tables au singulier (user, beer, brewery).
+
+En TypeScript : PascalCase pour les interfaces, types et classes, camelCase pour
+les variables et propriétés, nommage sémantique des fonctions de service selon
+la convention findAll*(), find*ById(), create*(), update*(), softDelete*().
+
+En HTTP : kebab-case pour les chemins de routes (/api/quizz-sessions,
+/api/beer-criteria, /api/user-criteria), méthodes HTTP standard (GET pour la
+lecture, POST pour la création, PUT pour le remplacement, PATCH pour la mise à
+jour partielle, DELETE pour la suppression).
+
+
+6.4 Intégrité, sécurité et confidentialité des données
+────────────────────────────────────────────────────────
+
+Plusieurs mécanismes complémentaires assurent l'intégrité et la confidentialité
+des données.
+
+L'intégrité référentielle est garantie par les contraintes de clé étrangère
+définies dans le schéma Prisma (onDelete: Cascade ou Restrict selon le cas), et
+par la gestion applicative des erreurs de contrainte Prisma (P2003 → 409 CONFLICT).
+
+La confidentialité des mots de passe est assurée par le hashage bcrypt à 12 rounds
+au moment de la création et de la mise à jour du mot de passe. Le champ password
+n'est jamais inclus dans un select Prisma exposé à l'API. Un test de sécurité
+dédié vérifie que l'endpoint GET /api/users/:id ne retourne jamais le champ
+password dans sa réponse.
+
+La confidentialité des données utilisateur est renforcée par le mécanisme de soft
+delete avec anonymisation : lors de la suppression d'un compte, le champ mail est
+remplacé par une valeur anonyme unique (deleted_<timestamp>@deleted.invalid),
+préservant l'unicité de la contrainte mail tout en rendant le compte inutilisable
+et anonyme.
+
+Les tokens de rafraîchissement JWT sont stockés en base de données avec un champ
+revoked_at, ce qui permet leur révocation explicite (logout) et la rotation à
+chaque utilisation. Un refresh token ne peut être utilisé qu'une seule fois.
+
+
+6.5 Base de données de test et stratégie de restauration
+──────────────────────────────────────────────────────────
+
+La stratégie de test repose sur la même instance MySQL que le développement, mais
+avec une isolation garantie par les transactions Prisma. Chaque test ouvre une
+transaction, exécute ses opérations, puis effectue un rollback systématique quelle
+que soit l'issue du test. La base de données de développement n'est donc jamais
+modifiée par l'exécution de la suite de tests.
+
+Le jeu d'essai de développement est défini dans prisma/seed.ts. Il est complet et
+couvrant : 5 utilisateurs de rôles variés, 8 bières avec leurs brasseries et
+catégories, 25 critères gustatifs, un quiz avec ses questions et choix (incluant
+les valeurs note_value utilisées par l'algorithme), des sessions complétées
+générant des UserCriteria et des recommandations calculées.
+
+Ce seed est idempotent grâce à l'utilisation systématique d'upsert (clé sur mail
+pour User, name pour Beer et Brewery, label pour Criterion). Il peut être relancé
+autant de fois que nécessaire sans générer d'erreur de doublon, ce qui permet de
+restaurer l'état initial de la base de développement à tout moment :
+
+  npx prisma db seed
+
+[Annexe V Capture : extrait prisma/seed.ts jeu d'essai utilisateurs]
+
+
+================================================================================
+7. TESTS
+================================================================================
+
+
+7.1 Stratégie et plan de tests
+────────────────────────────────
+
+La stratégie de tests du projet est structurée autour de la pyramide classique à
+trois niveaux : tests unitaires à la base, tests d'intégration au milieu, et tests
+E2E au sommet. Ce modèle guide non seulement la répartition du volume de tests
+mais aussi les responsabilités de chaque niveau.
+
+Cette stratégie s'est concrétisée dans un document de plan de tests (TEST_PLAN.md)
+conçu comme un outil de pilotage vivant plutôt qu'un document statique. Chaque
+cas de test est identifié par un identifiant structuré (ex. U-RATE-02 pour un
+test unitaire du service Rating, I-AUTH-06 pour un test d'intégration Auth, S-07
+pour un test de sécurité OWASP) et porte un statut explicite : implémenté,
+manquant ou partiel. Cette granularité permet d'identifier à tout moment
+ce qui est couvert et ce qui reste à traiter.
+
+La conception des cas de test suit un principe systématique : chaque règle métier
+ou contrainte technique se traduit en au moins un cas positif (chemin nominal) et
+un cas négatif (comportement d'erreur attendu). La règle métier imposant qu'un
+utilisateur ne peut noter une bière qu'une seule fois donne ainsi naissance à deux
+cas : U-RATE-02 vérifie que le service lève une HttpError 409 lors d'un doublon,
+I-RATE-02 vérifie que l'API retourne HTTP 409 via un appel HTTP réel.
+
+Les tests de sécurité sont intégrés dès la conception du plan, en référence aux
+catégories OWASP Top 10 API, et non ajoutés en fin de projet.
+
+[Annexe W Capture : TEST_PLAN.md extrait table des cas de tests avec statuts]
+
+
+7.2 Environnement de tests
+───────────────────────────
+
+L'environnement de tests est constitué de quatre éléments complémentaires.
+
+Le fichier vitest.config.ts configure le runner. La couverture est produite par
+le provider v8 natif. Le parallélisme de fichiers est désactivé pour éviter les conflits entre transactions concurrentes sur la même
+instance MySQL. Les timeouts sont portés à 30 secondes pour accommoder les
+opérations de base de données.
+
+Le helper withTestTransaction est la pièce
+centrale de l'isolation. Il ouvre une transaction Prisma $transaction, injecte
+le client transactionnel dans la fonction de test, puis effectue un rollback
+systématique dans le bloc finally, garantissant qu'aucun test ne laisse de traces
+en base quelle que soit son issue.
+
+Les factories centralisent la création de données
+de test : createTestUser(), createTestBeer(), createTestBrewery(). Chaque factory accepte des
+overrides optionnels pour personnaliser les données de chaque test sans dupliquer
+la logique de création.
+
+Les auth-helpers génèrent des tokens JWT valides
+signés pour les tests d'intégration, permettant de simuler une requête authentifiée
+en tant qu'utilisateur USER ou ADMIN en une seule ligne.
+
+  const token = userToken(userId);   // JWT user signé
+  const token = adminToken();        // JWT admin signé
+
+[Annexe X Capture : tests/helpers/with-transaction.ts]
+[Annexe Y Capture : tests/helpers/factories.ts extrait]
+
+
+7.3 Tests unitaires logique métier en isolation
+───────────────────────────────────────────────────
+
+Les tests unitaires portent exclusivement sur les services, qui
+contiennent toute la logique métier. Tester à ce niveau en isolation sans passer
+par la chaîne HTTP permet de valider précisément chaque branche de logique,
+chaque code d'erreur attendu, et chaque calcul métier, avec un feedback immédiat.
+
+Le projet compte 13 fichiers de tests unitaires pour 120 cas de tests couvrant
+l'ensemble des services : Auth, User, Beer, Brewery, Category, Pairing, Rating,
+Criterion, UserCriteria, BeerCriteria, Quiz, QuizzSession, et Recommendation.
+
+Exemple significatif test de l'algorithme de recommandation :
+
+  it('calcule correctement le produit scalaire normalisé', async () => {
+    // Score user: c1=4, c2=2 / Score beer: c1=3, c2=5
+    // Attendu: (4×3 + 2×5) / 2 = 11
+    await withTestTransaction(async (tx) => {
+      const user = await createTestUser(tx);
+      const beer = await createTestBeer(tx);
+      // ... création des critères et scores
+      const result = await refreshRecommendationsForUser(user.id);
+      expect(result.data[0].score_compatibility).toBe(11);
+    });
+  });
+
+Cette approche garantit que l'algorithme est non seulement fonctionnel mais
+mathématiquement correct, et qu'une régression sur le calcul sera immédiatement
+détectée. Les cas limites sont également couverts : bière soft-deleted exclue du
+calcul, utilisateur sans critères retournant une liste vide, session déjà complétée
+ne pouvant être finalisée une seconde fois, déclenchant une erreur 422 INVALID_SCORE.
+
+
+7.4 Tests d'intégration la chaîne HTTP complète
+───────────────────────────────────────────────────
+
+Les tests d'intégration utilisent Supertest pour envoyer de vraies requêtes HTTP
+à l'instance Express et vérifier l'intégralité de la chaîne : validation Zod,
+middleware d'authentification JWT, contrôle d'accès RBAC, controller, service
+et base de données.
+
+Le projet compte 14 fichiers de tests d'intégration pour 140 cas de tests.
+Toutes les réponses sont vérifiées contre le contrat ApiResponse<T>.
+
+Le test le plus représentatif est le flow de recommandation de bout en bout :
+démarrer une session de quiz, répondre à chaque question, compléter la session, déclencher le calcul, 
+puis récupérer les résultats triés par score décroissant. 
+Ce flux unique met en jeu six endpoints, cinq tables de base de données, et couvre la fonctionnalité
+principale du projet en un seul test de régression.
+
+La vérification du contrôle d'accès RBAC est également illustrative. Deux appels
+sur le même endpoint POST /api/categories avec le même payload valide l'un avec
+un token USER, l'autre avec un token ADMIN doivent respectivement retourner
+HTTP 403 et HTTP 201. Un seul test valide ainsi la route, le middleware de vérification
+du rôle et le controller.
+
+
+7.5 Tests de sécurité couverture OWASP
+──────────────────────────────────────────
+
+Les tests de sécurité sont intégrés dans le plan de tests dès la conception et
+référencent explicitement les catégories OWASP Top 10 API. Ils ne constituent
+pas un audit de sécurité complet, mais une couverture ciblée des vecteurs
+d'attaque les plus critiques pour une API REST avec authentification.
+
+Catégories couvertes et cas de tests associés :
+
+  API1 Broken Object Level Authorization (BOLA)
+  Cas S-07 : un utilisateur USER ne peut pas accéder aux recommandations d'un
+  autre utilisateur via GET /api/recommendations/user/:id avec l'id d'un tiers.
+  Résultat attendu : HTTP 403 FORBIDDEN.
+
+  API3 Broken Object Property Level Authorization
+  Cas S-08 : un utilisateur ne peut pas se promouvoir au rôle ADMIN via
+  PUT /api/users/:id en passant role: "ADMIN" dans le body.
+  Résultat attendu : le champ role est silencieusement supprimé du body par un
+  middleware avant que la validation Zod ne s'exécute. Si role est le seul champ envoyé,
+  la requête échoue avec HTTP 400 (body vide, refine Zod : "au moins un champ
+  requis"). Dans tous les cas, l'escalade de privilège est impossible.
+
+  API2 Broken Authentication
+  Cas S-01 à S-06 : requête sans token: 401 UNAUTHORIZED, token expiré:
+  401 TOKEN_EXPIRED, token avec signature invalide: 401 INVALID_TOKEN, refresh
+  token révoqué: 401 INVALID_REFRESH_TOKEN, refresh token d'un autre utilisateur: rejeté.
+
+  Confidentialité des données
+  Cas S-09 : GET /api/users/:id ne retourne jamais le champ password dans la
+  réponse JSON, quel que soit le rôle du demandeur.
+
+  Contrôle de débit
+  Le login est protégé par un rate limiter (5 requêtes par minute par IP). Un
+  test vérifie qu'après 5 tentatives échouées consécutives, la sixième retourne
+  HTTP 429 TOO_MANY_REQUESTS.
+
+[Annexe Z Capture : section Tests de sécurité du TEST_PLAN.md]
+[Annexe AA Capture : extrait test d'intégration auth cas S-01 à S-04]
+
+
+7.6 Résultats, couverture et automatisation
+─────────────────────────────────────────────
+
+Actuellement, la suite de tests compte 260 cas passants répartis sur 27 fichiers
+(13 unitaires + 14 intégration). Le rapport de couverture produit par vitest --coverage affiche les métriques suivantes :
+
+  Statements : 84,37 %  (740 / 876)
+  Branches   : 70,71 %  (206 / 291)
+  Functions  : 87,71 %  (180 / 205)
+  Lines      : 84,44 %  (731 / 866)
+
+La couverture par zone est particulièrement élevée sur les Routes (98,24 %) et
+les utilitaires lib/ (100 %), ce qui traduit la couverture systématique du contrat
+API. Les services atteignent 79,54 %, les controllers 79,67 %, et les middlewares
+84,78 %.
+
+L'automatisation des tests est assurée par GitHub Actions. Le workflow CI
+se déclenche à chaque push sur les branches main et
+develop, et sur chaque Pull Request. Il provisionne un service MySQL de test,
+applique les migrations Prisma, compile le TypeScript, puis exécute la suite
+complète de tests. Une Pull Request dont les tests échouent ne peut pas être
+fusionnée, ce qui constitue un filet de sécurité structurel contre les régressions.
+
+  Commandes disponibles :
+    npm test                  exécution de tous les tests
+    npm run test:watch        mode watch (développement)
+    npm run test:coverage     rapport HTML + JSON dans coverage/
+
+[Annexe AB Capture : rapport de couverture HTML (index.html)]
+[Annexe AC Capture : GitHub Actions workflow CI passant sur une PR]
+
+
+7.7 Tests E2E prévus, non réalisés par contrainte de périmètre
+─────────────────────────────────────────────────────────────────
+
+La pyramide de tests prévoit un troisième niveau : les tests E2E sur l'application
+mobile. Ces tests sont conçus et référencés dans le TEST_PLAN.md (section 2.3 et
+5.17), avec les outils sélectionnés et les scénarios détaillés.
+
+L'outil retenu est Maestro : un framework déclaratif en fichiers YAML cross-platform
+iOS et Android, adapté au testing de flux complets sur simulateur. Les scénarios
+prévus couvrent le parcours d'inscription et de connexion, le parcours quiz complet
+de A à Z, la consultation des recommandations, la notation d'une bière via le
+Zythothèque, et la déconnexion avec vérification de l'invalidation du token.
+
+Ces tests n'ont pas pu être réalisés pour une raison de dépendance de périmètre :
+l'interface mobile React Native est en cours de développement. Les tests E2E seront implémentés dès la livraison du frontend. La
+conception et la préparation de ces tests (choix des outils, rédaction des
+scénarios, identification des sélecteurs d'éléments UI) sont néanmoins complètes,
+garantissant qu'ils pourront être mis en œuvre sans délai supplémentaire de
+conception.
+
+Cette anticipation illustre une pratique professionnelle importante : la réflexion
+sur la testabilité précède la réalisation, et non l'inverse.
+
+
+================================================================================
+ANNEXES
+================================================================================
+
+  A.  Tableau de la stack technique (README.md ou captures des dépendances)
+  B.  Tableau Notion vue Kanban des tâches par phase
+  C.  Extrait PROJECT.md Definition of Done Phase 2 ou Phase 3
+  D.  GitHub liste des Pull Requests ou graphe de branches Git
+  E.  Diagramme d'action UML : parcours quiz (start → answer → complete → recommandations)
+  F.  Plan de l'application : arborescence des écrans
+  G.  Figma captures des maquettes principales (Login, Home, Quiz, Recommandations)
+  H.  Code : extrait beer.routes.ts enchaînement des middlewares de route
+  I.  Code : middleware validate.ts code complet avec formatage erreurs Zod
+  J.  Code : extrait beer.controller.ts pattern controller léger
+  K.  Code : extrait recommendation.service.ts fonction computeAndStoreRecommendations
+  L.  Code : extrait recommendation.service.test.ts test du produit scalaire (exemple numérique)
+  M.  Code : src/lib/paginate.ts helper générique de pagination
+  N.  Code : middleware authenticate.ts code complet
+  O.  Code : middleware require-admin.ts et require-owner-or-admin.ts
+  P.  Capture Swagger UI exemple de réponse API (succès et erreur)
+  Q.  MCD complet 17 entités avec cardinalités
+  R.  MLD complet clés primaires, étrangères et contraintes d'unicité
+  S.  MPD schéma physique MySQL
+  T.  Code : prisma/schema.prisma extrait des modèles Beer, Rating, Criterion, UserCriteria
+  U.  Capture : liste des migrations Prisma (dossier migrations/)
+  V.  Code : extrait prisma/seed.ts création des utilisateurs et bières de test
+  W.  Capture : TEST_PLAN.md table des cas de tests avec statuts
+  X.  Code : tests/helpers/with-transaction.ts helper d'isolation transactionnelle
+  Y.  Code : tests/helpers/factories.ts extrait des factories de test
+  Z.  Capture : section Tests de sécurité du TEST_PLAN.md (OWASP)
+  AA. Code : extrait test d'intégration auth cas S-01 à S-04 (tokens invalides)
+  AB. Capture : rapport de couverture HTML généré par vitest --coverage
+  AC. Capture : GitHub Actions workflow CI passant sur une Pull Request
+
+
+================================================================================
+FIN DU DOCUMENT
+================================================================================

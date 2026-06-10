@@ -1,0 +1,526 @@
+================================================================================
+PROCÈS DE RECETTAGE — ZYTHONOMIE
+================================================================================
+Version       : 1.0
+Date          : 18 mai 2026
+Environnement : Local (backend http://localhost:3000, frontend non déployé)
+Référence CDC : Cahier des charges sections 5 (fonctionnalités) et 6 (solutions
+                techniques)
+================================================================================
+
+
+================================================================================
+1. OBJET ET PÉRIMÈTRE
+================================================================================
+
+Ce document constitue le procès de recettage officiel de l'application Zythonomie,
+une application mobile de découverte et de recommandation de bières artisanales.
+Son objectif est de vérifier la conformité de l'application livrée avec l'ensemble
+des exigences définies dans le cahier des charges.
+
+Le périmètre couvre la totalité des fonctionnalités attendues, qu'elles soient
+implémentées ou non à ce stade du projet. Les fonctionnalités non encore
+développées (interface mobile React Native, scanner de codes-barres) sont tracées
+et marquées "Non applicable" afin de garantir la complétude et la traçabilité du
+document vis-à-vis du cahier des charges.
+
+Périmètre du recettage :
+  Fonctionnel   — Authentification, fiches bières et brasseries, quiz d'orientation,
+                  bièrodex et notation, recommandations, recherche avancée avec filtres
+  Non implémenté — Scanner (react-native-vision-camera), interfaces mobiles
+  Non fonctionnel — Sécurité, performance, compatibilité, accessibilité
+
+
+================================================================================
+2. ENVIRONNEMENT DE TEST
+================================================================================
+
+Composant                  Version     État
+─────────────────────────  ──────────  ────────────────────────────────────────
+Système d'exploitation     Windows     Local
+Node.js                    22.x        -
+Backend (Express 5)        5.x         Démarré sur http://localhost:3000
+Base de données            MySQL 8     Instance locale
+ORM                        Prisma 6    Client généré (prisma generate)
+Frontend (React Native)    Expo SDK    Non déployé — squelette uniquement
+Client de test             Swagger UI  http://localhost:3000/api/docs
+
+Données initiales : seed chargé via  cd backend && npm run seed
+
+Comptes de test disponibles (issus du seed) :
+  Rôle ADMIN — admin@zythonomie.com   / mot de passe seed
+  Rôle USER  — user@zythonomie.com    / mot de passe seed
+
+
+================================================================================
+3. LÉGENDE
+================================================================================
+
+  Validé          — Comportement observé conforme au résultat attendu
+  Échoué          — Comportement non conforme, anomalie détectée
+  En attente      — Test non encore exécuté ou non exécutable sans action externe
+  Non applicable  — Fonctionnalité non implémentée dans la version courante
+
+
+================================================================================
+4. BILAN GÉNÉRAL
+================================================================================
+
+Module                              Total   Validé  Échoué  En att.  Non appl.
+──────────────────────────────────  ──────  ──────  ──────  ───────  ─────────
+AUTH  — Authentification               12       8       0        1          3
+BEER  — Fiches bières                  11       9       0        0          2
+BREW  — Fiches brasseries               6       4       0        0          2
+SCAN  — Scanner de codes-barres         4       0       0        0          4
+QUIZ  — Quiz d'orientation              7       5       0        0          2
+BIERO — Bièrodex et notation            7       6       0        0          1
+RECO  — Recommandations                 6       5       0        0          1
+RECH  — Recherche avancée               6       5       0        0          1
+SEC   — Sécurité                        9       7       0        1          1
+PERF  — Performance                     5       2       0        0          3
+COMPAT — Compatibilité                  4       1       0        0          3
+ACCESS — Accessibilité                  4       0       0        0          4
+──────────────────────────────────  ──────  ──────  ──────  ───────  ─────────
+TOTAL                                  81      52       0        2         27
+
+Taux de validation (cas testables uniquement) :  52 / 54  =  96,3 %
+Couverture globale (incluant Non applicable)  :  52 / 81  =  64,2 %
+
+Les 27 cas "Non applicable" correspondent exclusivement aux fonctionnalités
+dépendantes de l'interface mobile (scanner, écrans, navigation, accessibilité),
+non développées dans cette version. La levée de ces blocages est conditionnée
+au développement du frontend.
+
+
+================================================================================
+5. RECETTAGE FONCTIONNEL
+================================================================================
+
+Format des tableaux :
+  ID  |  Cas de test  |  Étapes / Conditions  |  Résultat attendu  |  Résultat obtenu  |  Statut
+
+
+────────────────────────────────────────────────────────────────────────────────
+5.1  AUTHENTIFICATION ET COMPTE UTILISATEUR  (AUTH)
+────────────────────────────────────────────────────────────────────────────────
+
+Le backend implémente une authentification par access token JWT (durée de vie 1h)
+et refresh token (7 jours, rotation à chaque utilisation, révocation en base de
+données via la table RefreshToken). Les mots de passe sont hachés avec bcrypt à
+12 rounds.
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-01    │ Inscription valide               │ POST /api/auth/register              │ HTTP 201, access token + refresh token │ Conforme                 │ Validé         │
+│            │                                  │ { email, password, name } valides    │ retournés, mot de passe non exposé     │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-02    │ Inscription — email existant     │ POST /api/auth/register              │ HTTP 409                               │ Conforme                 │ Validé         │
+│            │                                  │ avec email déjà enregistré           │ code EMAIL_ALREADY_EXISTS              │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-03    │ Inscription — données invalides  │ POST /api/auth/register              │ HTTP 422, détail des erreurs de        │ Conforme                 │ Validé         │
+│            │                                  │ champs manquants ou mal formés       │ validation champ par champ             │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-04    │ Connexion valide                 │ POST /api/auth/login                 │ HTTP 200, access token + refresh token │ Conforme                 │ Validé         │
+│            │                                  │ { email, password } corrects         │ retournés                              │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-05    │ Connexion — mot de passe erroné  │ POST /api/auth/login                 │ HTTP 401                               │ Conforme                 │ Validé         │
+│            │                                  │ mauvais mot de passe                 │ code INVALID_CREDENTIALS               │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-06    │ Rafraîchissement du token        │ POST /api/auth/refresh               │ HTTP 200, nouveau couple               │ Conforme — ancien token  │ Validé         │
+│            │                                  │ refresh token valide en body         │ access/refresh émis, ancien révoqué    │ révoqué en DB            │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-07    │ Déconnexion                      │ POST /api/auth/logout                │ HTTP 204, refresh token révoqué en     │ Conforme                 │ Validé         │
+│            │                                  │ refresh token en body                │ base de données                        │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-08    │ Accès endpoint protégé           │ GET /api/users/me                    │ HTTP 401                               │ Conforme                 │ Validé         │
+│            │ sans token                       │ sans header Authorization            │ code UNAUTHORIZED                      │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-09    │ Rate limiting anti-brute force   │ 6 tentatives de connexion échouées   │ 6e requête → HTTP 429                  │ Non vérifiable en env.   │ En attente     │
+│            │                                  │ en < 1 minute sur même IP            │ code TOO_MANY_REQUESTS                 │ de test (désactivé si    │                │
+│            │                                  │                                      │                                        │ NODE_ENV=test)           │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-10    │ Interface mobile — Connexion     │ Affichage de l'écran Login           │ Champs email + mot de passe, bouton    │ N/A                      │ Non applicable │
+│            │                                  │ (React Native)                       │ de connexion, lien vers inscription    │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-11    │ Stockage sécurisé des tokens     │ Connexion réussie dans l'app mobile  │ Tokens persistés via expo-secure-store │ N/A                      │ Non applicable │
+│            │                                  │                                      │ chiffrés sur l'appareil                │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ AUTH-12    │ Rafraîchissement silencieux      │ Requête avec access token expiré     │ Token rafraîchi automatiquement par    │ N/A                      │ Non applicable │
+│            │ (intercepteur Axios)             │ (intercepteur Axios 401)             │ l'intercepteur, requête rejouée        │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+5.2  FICHES BIÈRES  (BEER)
+────────────────────────────────────────────────────────────────────────────────
+
+La fiche bière expose les informations descriptives (nom, description, degré
+alcool, catégorie, brasserie, note moyenne) et les accords mets-bières. La liste
+est paginée et filtrable. Toute opération d'écriture est réservée aux
+administrateurs.
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-01    │ Liste des bières                 │ GET /api/beers                        │ HTTP 200, liste paginée (data, meta    │ Conforme                 │ Validé         │
+│            │                                  │                                      │ page / limit / total / totalPages)     │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-02    │ Filtre par catégorie             │ GET /api/beers?categoryId=X           │ HTTP 200, uniquement bières de la      │ Conforme                 │ Validé         │
+│            │                                  │                                      │ catégorie demandée                     │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-03    │ Filtre par brasserie             │ GET /api/beers?breweryId=X            │ HTTP 200, uniquement bières de la      │ Conforme                 │ Validé         │
+│            │                                  │                                      │ brasserie demandée                     │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-04    │ Recherche par nom                │ GET /api/beers?search=IPA             │ HTTP 200, bières dont le nom contient  │ Conforme                 │ Validé         │
+│            │                                  │                                      │ le terme recherché                     │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-05    │ Détail d'une bière               │ GET /api/beers/:id                    │ HTTP 200, fiche complète : catégorie,  │ Conforme                 │ Validé         │
+│            │                                  │                                      │ brasserie, pairings, note moyenne      │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-06    │ Bière inexistante                │ GET /api/beers/99999                  │ HTTP 404                               │ Conforme                 │ Validé         │
+│            │                                  │                                      │ code BEER_NOT_FOUND                    │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-07    │ Création bière (admin)           │ POST /api/beers avec token admin      │ HTTP 201, fiche créée                  │ Conforme                 │ Validé         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-08    │ Création bière (user standard)   │ POST /api/beers avec token user       │ HTTP 403                               │ Conforme                 │ Validé         │
+│            │                                  │                                      │ code FORBIDDEN                         │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-09    │ Suppression logique (admin)      │ DELETE /api/beers/:id token admin     │ HTTP 204, bière retirée de la liste    │ Conforme (soft delete,   │ Validé         │
+│            │                                  │                                      │ sans suppression physique en DB        │ non effacée en DB)       │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-10    │ Affichage fiche bière (mobile)   │ Navigation vers une bière dans l'app  │ Écran : descriptif saveur, note,       │ N/A                      │ Non applicable │
+│            │                                  │                                      │ info historique, brasserie, pairings   │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BEER-11    │ Navigation liste → fiche (mob.)  │ Tap sur une bière dans la liste       │ Redirection vers la fiche détaillée    │ N/A                      │ Non applicable │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+5.3  FICHES BRASSERIES  (BREW)
+────────────────────────────────────────────────────────────────────────────────
+
+La fiche brasserie expose les informations descriptives (nom, localisation,
+historique, description) et liste automatiquement les bières rattachées.
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BREW-01    │ Liste des brasseries             │ GET /api/breweries                    │ HTTP 200, liste paginée                │ Conforme                 │ Validé         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BREW-02    │ Détail d'une brasserie           │ GET /api/breweries/:id                │ HTTP 200, fiche complète avec liste    │ Conforme                 │ Validé         │
+│            │                                  │                                      │ des bières associées                   │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BREW-03    │ Brasserie inexistante            │ GET /api/breweries/99999              │ HTTP 404                               │ Conforme                 │ Validé         │
+│            │                                  │                                      │ code BREWERY_NOT_FOUND                 │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BREW-04    │ Création brasserie (admin)       │ POST /api/breweries token admin       │ HTTP 201, brasserie créée              │ Conforme                 │ Validé         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BREW-05    │ Affichage fiche brasserie (mob.) │ Navigation vers une brasserie         │ Écran : historique, localisation,      │ N/A                      │ Non applicable │
+│            │                                  │                                      │ galerie bières de la brasserie         │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BREW-06    │ Navigation galerie → fiche bière │ Tap sur une bière dans la galerie    │ Redirection vers la fiche bière        │ N/A                      │ Non applicable │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+5.4  SCANNER DE CODES-BARRES  (SCAN)
+────────────────────────────────────────────────────────────────────────────────
+
+La fonctionnalité de scanner (react-native-vision-camera) permet d'identifier une
+bière par son code-barres et de rediriger vers sa fiche. Elle requiert l'interface
+mobile React Native, non développée dans cette version.
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SCAN-01    │ Ouverture du scanner             │ Tap sur bouton Scanner dans l'app    │ Accès à la caméra, flux vidéo actif    │ N/A                      │ Non applicable │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SCAN-02    │ Scan d'un code-barres reconnu    │ Flash d'une bière référencée en base  │ Détection instantanée, redirection     │ N/A                      │ Non applicable │
+│            │                                  │                                      │ vers la fiche bière correspondante     │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SCAN-03    │ Code-barres non référencé        │ Flash d'un produit absent de la base  │ Message informatif "bière non          │ N/A                      │ Non applicable │
+│            │                                  │                                      │ référencée"                            │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SCAN-04    │ Permission caméra refusée        │ Refus de l'accès caméra à l'app      │ Message explicatif + bouton vers       │ N/A                      │ Non applicable │
+│            │                                  │                                      │ les paramètres système                 │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+5.5  QUIZ D'ORIENTATION  (QUIZ)
+────────────────────────────────────────────────────────────────────────────────
+
+Le quiz est le moteur de personnalisation. L'utilisateur répond à une série de
+questions sur ses préférences gustatives. À la complétion, les réponses sont
+converties en UserCriteria (vecteur de préférences), qui alimentent l'algorithme
+de recommandation par produit scalaire.
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ QUIZ-01    │ Démarrage d'une session quiz     │ POST /api/quizz-sessions             │ HTTP 201, session créée                │ Conforme                 │ Validé         │
+│            │                                  │ { quizId } + token utilisateur       │ statut IN_PROGRESS                     │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ QUIZ-02    │ Réponse à une question           │ POST /api/quizz-sessions/:id/answers │ HTTP 201, réponse enregistrée          │ Conforme                 │ Validé         │
+│            │                                  │ { questionId, choiceId }             │                                        │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ QUIZ-03    │ Complétion du quiz               │ PUT /api/quizz-sessions/:id/complete  │ HTTP 200, statut COMPLETED,            │ Conforme                 │ Validé         │
+│            │                                  │                                      │ upsert UserCriteria déclenché          │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ QUIZ-04    │ Calcul automatique UserCriteria  │ Vérifier table UserCriteria après    │ Critères mis à jour selon les réponses │ Conforme (upsert         │ Validé         │
+│            │                                  │ complétion du quiz                   │ données au quiz                        │ transactionnel)          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ QUIZ-05    │ Session déjà complétée           │ PUT /api/quizz-sessions/:id/complete  │ HTTP 400, code SESSION_ALREADY_        │ Conforme                 │ Validé         │
+│            │                                  │ sur session COMPLETED                │ COMPLETED                              │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ QUIZ-06    │ Affichage quiz (mobile)          │ Lancement du quiz depuis l'app       │ Questions affichées une par une,       │ N/A                      │ Non applicable │
+│            │                                  │                                      │ choix sélectionnable, progression      │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ QUIZ-07    │ Affichage résultats quiz (mob.)  │ Fin du quiz dans l'app               │ Écran récapitulatif + liste de bières  │ N/A                      │ Non applicable │
+│            │                                  │                                      │ recommandées                           │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+5.6  BIÈRODEX ET NOTATION  (BIERO)
+────────────────────────────────────────────────────────────────────────────────
+
+Le bièrodex est la collection personnelle de l'utilisateur : il regroupe les bières
+qu'il a notées. La règle métier impose au maximum une note par couple
+utilisateur/bière. La note peut être modifiée a posteriori.
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BIERO-01   │ Notation d'une bière             │ POST /api/ratings                    │ HTTP 201, note créée                   │ Conforme                 │ Validé         │
+│            │                                  │ { beerId, score, comment } + token   │                                        │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BIERO-02   │ Double notation même bière       │ POST /api/ratings sur un couple      │ HTTP 409                               │ Conforme                 │ Validé         │
+│            │                                  │ utilisateur/bière déjà noté          │ code RATING_ALREADY_EXISTS             │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BIERO-03   │ Modification d'une note          │ PUT /api/ratings/:id                 │ HTTP 200, note mise à jour             │ Conforme                 │ Validé         │
+│            │                                  │ avec token propriétaire              │                                        │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BIERO-04   │ Modification par un tiers        │ PUT /api/ratings/:id                 │ HTTP 403                               │ Conforme                 │ Validé         │
+│            │                                  │ avec token d'un autre utilisateur    │ code FORBIDDEN                         │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BIERO-05   │ Consultation notes utilisateur   │ GET /api/ratings?userId=X            │ HTTP 200, liste des notes              │ Conforme                 │ Validé         │
+│            │                                  │                                      │ de l'utilisateur                       │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BIERO-06   │ Suppression d'une note           │ DELETE /api/ratings/:id              │ HTTP 204, note supprimée (soft delete) │ Conforme                 │ Validé         │
+│            │                                  │ token propriétaire ou admin          │                                        │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ BIERO-07   │ Affichage bièrodex (mobile)      │ Navigation vers onglet Bièrodex      │ Collection des bières notées, scores   │ N/A                      │ Non applicable │
+│            │                                  │ dans l'application                   │ et commentaires affichés               │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+5.7  RECOMMANDATIONS  (RECO)
+────────────────────────────────────────────────────────────────────────────────
+
+L'algorithme calcule un score de compatibilité par produit scalaire normalisé
+entre le vecteur de préférences de l'utilisateur (UserCriteria) et celui de chaque
+bière (BeerCriteria). Les recommandations sont persistées et triées par score
+décroissant.
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECO-01    │ Calcul des recommandations       │ POST /api/recommendations/refresh/   │ HTTP 200, recommandations calculées    │ Conforme                 │ Validé         │
+│            │                                  │ :userId après quiz complété          │ et persistées par score décroissant    │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECO-02    │ Consultation des recommandations │ GET /api/recommendations/user/:id    │ HTTP 200, liste triée par              │ Conforme                 │ Validé         │
+│            │                                  │                                      │ compatibilité décroissante             │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECO-03    │ Utilisateur sans quiz complété   │ Refresh pour user sans UserCriteria  │ HTTP 200, liste vide                   │ Conforme                 │ Validé         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECO-04    │ Idempotence du calcul            │ Deux refresh successifs sans         │ Résultats identiques aux deux appels   │ Conforme                 │ Validé         │
+│            │                                  │ modification des critères            │                                        │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECO-05    │ Bière soft-deleted exclue        │ Bière supprimée (soft delete)        │ Bière absente des recommandations      │ Conforme                 │ Validé         │
+│            │                                  │ présente en DB                       │ calculées                              │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECO-06    │ Affichage recommandations (mob.) │ Consultation des reco dans l'app     │ Liste de BeerCard avec score affiché,  │ N/A                      │ Non applicable │
+│            │                                  │                                      │ navigation vers fiche bière            │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+5.8  RECHERCHE AVANCÉE AVEC FILTRES  (RECH)
+────────────────────────────────────────────────────────────────────────────────
+
+Les filtres sont appliqués côté serveur et combinables entre eux. La liste résultante
+est paginée.
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECH-01    │ Filtre par catégorie             │ GET /api/beers?categoryId=X           │ Bières de la catégorie uniquement      │ Conforme                 │ Validé         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECH-02    │ Filtre par brasserie             │ GET /api/beers?breweryId=X            │ Bières de la brasserie uniquement      │ Conforme                 │ Validé         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECH-03    │ Recherche libre par nom          │ GET /api/beers?search=IPA             │ Bières dont le nom contient le terme   │ Conforme                 │ Validé         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECH-04    │ Filtres combinés                 │ GET /api/beers?categoryId=X&search=Y  │ Résultats satisfaisant tous les        │ Conforme                 │ Validé         │
+│            │                                  │                                      │ filtres simultanément                  │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECH-05    │ Pagination des résultats         │ GET /api/beers?page=2&limit=5         │ Page 2 avec 5 résultats max,           │ Conforme                 │ Validé         │
+│            │                                  │                                      │ meta totalPages cohérent               │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ RECH-06    │ Interface de recherche (mobile)  │ Accès à l'écran recherche avancée    │ Champs de filtres, liste mise à jour   │ N/A                      │ Non applicable │
+│            │                                  │ dans l'application                   │ dynamiquement                          │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+================================================================================
+6. RECETTAGE NON FONCTIONNEL
+================================================================================
+
+────────────────────────────────────────────────────────────────────────────────
+6.1  SÉCURITÉ  (SEC)
+────────────────────────────────────────────────────────────────────────────────
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SEC-01     │ Hachage des mots de passe        │ Inspecter le champ password en DB    │ Hash bcrypt non lisible (préfixe $2b$) │ Conforme (bcrypt         │ Validé         │
+│            │                                  │ après inscription                    │                                        │ 12 rounds)               │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SEC-02     │ Mot de passe non exposé en API   │ Inspecter toute réponse retournant   │ Champ password absent de toutes        │ Conforme (Prisma select  │ Validé         │
+│            │                                  │ un objet User                        │ les réponses JSON                      │ explicite)               │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SEC-03     │ Access token expiré              │ Appeler un endpoint protégé avec un  │ HTTP 401                               │ Conforme                 │ Validé         │
+│            │                                  │ token dont l'exp est dépassé         │ code TOKEN_EXPIRED                     │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SEC-04     │ Réutilisation refresh token      │ Rejouer un refresh token déjà        │ HTTP 401, token révoqué, session       │ Conforme (rotation +     │ Validé         │
+│            │ révoqué (rotation)               │ consommé                             │ invalidée                              │ révocation en DB)        │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SEC-05     │ Accès admin sans rôle ADMIN      │ DELETE /api/beers/:id avec token     │ HTTP 403                               │ Conforme                 │ Validé         │
+│            │                                  │ d'un user standard                   │ code FORBIDDEN                         │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SEC-06     │ Modification ressource tierce    │ PUT /api/ratings/:id avec token      │ HTTP 403                               │ Conforme                 │ Validé         │
+│            │                                  │ d'un autre utilisateur               │ code FORBIDDEN                         │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SEC-07     │ En-têtes de sécurité HTTP        │ Inspecter les headers de réponse     │ X-Content-Type-Options, X-Frame-       │ Conforme (Helmet         │ Validé         │
+│            │                                  │ de n'importe quel endpoint           │ Options, X-DNS-Prefetch-Control…       │ configuré)               │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SEC-08     │ Rate limiting anti-brute force   │ 6 tentatives de connexion échouées   │ 6e requête → HTTP 429                  │ Non testable (désactivé  │ En attente     │
+│            │                                  │ en < 1 minute sur même IP            │ code TOO_MANY_REQUESTS                 │ si NODE_ENV=test)        │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ SEC-09     │ Stockage sécurisé côté client    │ Vérifier que les tokens sont stockés │ Tokens dans expo-secure-store,         │ N/A                      │ Non applicable │
+│            │                                  │ via expo-secure-store (mobile)       │ chiffrés, inaccessibles à d'autres app │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+6.2  PERFORMANCE  (PERF)
+────────────────────────────────────────────────────────────────────────────────
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ PERF-01    │ Temps réponse — liste bières     │ GET /api/beers mesuré avec client    │ Réponse < 500 ms                       │ Conforme (< 100 ms       │ Validé         │
+│            │                                  │ HTTP sur données du seed             │                                        │ observé en local)        │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ PERF-02    │ Temps réponse — recommandations  │ GET /api/recommendations/user/:id    │ Réponse < 1 000 ms                     │ Conforme                 │ Validé         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ PERF-03    │ Performance scanner (mobile)     │ Détection code-barres en temps réel  │ Détection < 500 ms                     │ N/A                      │ Non applicable │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ PERF-04    │ Chargement initial de l'app      │ Premier lancement application mobile  │ Splash screen → liste bières < 3 s    │ N/A                      │ Non applicable │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ PERF-05    │ Mise en cache Zustand            │ Navigation entre écrans déjà chargés  │ Pas de rechargement réseau, données    │ N/A                      │ Non applicable │
+│            │                                  │                                      │ servies depuis le store Zustand        │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+6.3  COMPATIBILITÉ  (COMPAT)
+────────────────────────────────────────────────────────────────────────────────
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ COMPAT-01  │ API REST accessible (tout client)│ Appeler l'API depuis Postman,        │ Réponses JSON standards identiques     │ Conforme                 │ Validé         │
+│            │                                  │ Bruno ou Swagger UI                  │ quel que soit le client                │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ COMPAT-02  │ Application sur Android          │ Installer et lancer l'APK sur        │ Application fonctionnelle, UI          │ N/A                      │ Non applicable │
+│            │                                  │ Android 10+                          │ identique à la maquette                │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ COMPAT-03  │ Application sur iOS              │ Installer et lancer sur iPhone       │ Application fonctionnelle, UI          │ N/A                      │ Non applicable │
+│            │                                  │ iOS 14+                              │ identique à la maquette                │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ COMPAT-04  │ Uniformité Android / iOS         │ Comparer le rendu des deux           │ Expérience utilisateur uniforme        │ N/A                      │ Non applicable │
+│            │                                  │ plateformes sur les mêmes écrans     │ sur les deux plateformes               │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+────────────────────────────────────────────────────────────────────────────────
+6.4  ACCESSIBILITÉ  (ACCESS)
+────────────────────────────────────────────────────────────────────────────────
+
+┌────────────┬──────────────────────────────────┬──────────────────────────────────────┬────────────────────────────────────────┬──────────────────────────┬────────────────┐
+│ ID         │ Cas de test                      │ Étapes / Conditions                  │ Résultat attendu                       │ Résultat obtenu          │ Statut         │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ ACCESS-01  │ Navigabilité intuitive           │ Parcours utilisateur novice          │ Accès au quiz, aux bières et au compte │ N/A                      │ Non applicable │
+│            │                                  │ sans guide externe                   │ sans difficulté de navigation          │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ ACCESS-02  │ Feedbacks visuels                │ Actions : validation, erreur,        │ Indicateurs clairs : succès en vert,   │ N/A                      │ Non applicable │
+│            │                                  │ chargement dans l'interface          │ erreur en rouge, loader visible        │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ ACCESS-03  │ Lisibilité — taille et contraste │ Inspecter tailles de police et       │ Police ≥ 14sp, ratio de contraste      │ N/A                      │ Non applicable │
+│            │                                  │ contrastes dans l'interface          │ ≥ 4,5:1 (norme WCAG AA)                │                          │                │
+├────────────┼──────────────────────────────────┼──────────────────────────────────────┼────────────────────────────────────────┼──────────────────────────┼────────────────┤
+│ ACCESS-04  │ Lecteur d'écran                  │ Activer TalkBack (Android) ou        │ Labels accessibilityLabel définis sur  │ N/A                      │ Non applicable │
+│            │                                  │ VoiceOver (iOS)                      │ tous les composants interactifs        │                          │                │
+└────────────┴──────────────────────────────────┴──────────────────────────────────────┴────────────────────────────────────────┴──────────────────────────┴────────────────┘
+
+
+================================================================================
+7. ANOMALIES ET POINTS DE VIGILANCE
+================================================================================
+
+┌────────────┬───────────────────────────────────────────────────────────────┬──────────┬────────────────────────┐
+│ Réf.       │ Description                                                   │ Sévérité │ Statut                 │
+├────────────┼───────────────────────────────────────────────────────────────┼──────────┼────────────────────────┤
+│ ANO-01     │ Rate limiting (AUTH-09, SEC-08) non testable en environnement │ Mineur   │ Vérification manuelle  │
+│            │ automatisé : le middleware express-rate-limit est désactivé   │          │ requise sur instance   │
+│            │ quand NODE_ENV=test. Un test manuel sur instance de           │          │ de production          │
+│            │ production est requis pour valider le comportement 429.       │          │                        │
+├────────────┼───────────────────────────────────────────────────────────────┼──────────┼────────────────────────┤
+│ ANO-02     │ Tests E2E Maestro (7 parcours utilisateur définis dans le     │ Majeur   │ Bloqué — dépend du     │
+│            │ plan de test) non exécutables : ils couvrent les flux         │          │ développement du       │
+│            │ inscription → quiz → recommandations → notation, mais         │          │ frontend React Native  │
+│            │ requièrent une interface mobile fonctionnelle.                │          │                        │
+└────────────┴───────────────────────────────────────────────────────────────┴──────────┴────────────────────────┘
+
+
+================================================================================
+8. CONCLUSION
+================================================================================
+
+Le recettage de Zythonomie fait ressortir deux périmètres clairement distincts.
+
+Côté backend, la couverture est quasi exhaustive : 52 cas sur 54 testables sont
+validés, aucune anomalie fonctionnelle n'a été détectée. Les fondations
+techniques répondent à l'ensemble des exigences du cahier des charges : hachage
+des mots de passe (bcrypt 12 rounds), authentification JWT avec rotation des
+refresh tokens, contrôle d'accès par rôle (RBAC), algorithme de recommandation
+par produit scalaire, pagination, filtres combinables et documentation API
+interactive. La seule entrée en attente concerne le rate limiting, désactivé en
+environnement de test et à vérifier manuellement sur une instance de production.
+
+Les 27 cas "Non applicable" correspondent exclusivement aux fonctionnalités
+dépendantes de l'interface mobile — scanner, écrans de navigation, mise en cache
+Zustand, accessibilité — qui n'ont pas été développées dans cette version du
+projet. Ces cas sont entièrement tracés et prêts à être rejouables dès lors que
+le frontend sera implémenté.
+
+La levée des deux anomalies identifiées (ANO-01 et ANO-02) est conditionnée,
+respectivement, au déploiement sur une instance de production et au développement
+du frontend. L'architecture technique posée (contrat ApiResponse<T>, intercepteur
+Axios JWT prévu, stores Zustand définis) réduit le risque d'intégration lors de
+cette prochaine étape.
+
+================================================================================

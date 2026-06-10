@@ -1,0 +1,421 @@
+
+                    ════════════════════════════════════════
+                           RAPPORT D'INTERVENTION
+                    ════════════════════════════════════════
+
+
+                              PROJET ZYTHONOMIE
+                  Application mobile de recommandation de bières
+
+
+
+
+    Référence         :  ZYTH-RI-2026-001
+    Date              :  18 mai 2026
+    Version           :  1.0 — Version finale
+    Statut            :  Livré
+
+
+
+
+    ┌─────────────────────────────────────────────────────────────────────┐
+    │  Ce document constitue le rapport d'intervention final du projet    │
+    │  Zythonomie. Il synthétise les travaux réalisés, les résultats du   │
+    │  recettage et les recommandations pour la suite du projet.          │
+    └─────────────────────────────────────────────────────────────────────┘
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+TABLE DES MATIÈRES
+═══════════════════════════════════════════════════════════════════════════════
+
+    1.  Contexte et objectifs de l'intervention
+    2.  Périmètre et organisation de l'intervention
+    3.  Architecture technique mise en place
+    4.  Travaux réalisés
+        4.1  Phase de développement backend
+        4.2  Phase de tests automatisés
+        4.3  Phase de sécurisation
+        4.4  Phase de documentation et CI/CD
+        4.5  Frontend — état et périmètre prévu
+    5.  Résultats du recettage
+        5.1  Synthèse par module
+        5.2  Anomalies constatées
+    6.  Recommandations
+    7.  Conclusion
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+1.  CONTEXTE ET OBJECTIFS DE L'INTERVENTION
+═══════════════════════════════════════════════════════════════════════════════
+
+    1.1  Présentation du projet
+    ───────────────────────────
+
+    Zythonomie est une application mobile de découverte et de recommandation
+    de bières artisanales. L'utilisateur répond à un quiz de préférences
+    gustatives ; l'application lui recommande les bières les plus compatibles
+    avec son profil grâce à un algorithme de compatibilité par produit
+    scalaire.
+
+    Le projet s'inscrit dans le cadre d'un développement académique visant
+    à couvrir l'intégralité du cycle logiciel : conception, développement,
+    sécurisation, tests automatisés, documentation et préparation au
+    déploiement.
+
+    1.2  Objectifs de l'intervention
+    ──────────────────────────────────
+
+    L'intervention avait pour objectifs principaux :
+
+      •  Développer une API REST complète et sécurisée couvrant l'ensemble
+         des fonctionnalités décrites dans le cahier des charges ;
+      •  Mettre en place une stratégie de tests automatisés garantissant la
+         fiabilité et la non-régression du code ;
+      •  Sécuriser les données utilisateurs (authentification JWT, hachage
+         des mots de passe, contrôle d'accès par rôle) ;
+      •  Documenter l'API de façon exploitable par l'équipe frontend ;
+      •  Automatiser le pipeline de build et de test via GitHub Actions ;
+      •  Définir l'architecture frontend et préparer l'intégration.
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+2.  PÉRIMÈTRE ET ORGANISATION DE L'INTERVENTION
+═══════════════════════════════════════════════════════════════════════════════
+
+    2.1  Périmètre réalisé
+    ──────────────────────
+
+    ┌─────────────────────────────────────┬─────────────────────────────────┐
+    │  Domaine                            │  État                           │
+    ├─────────────────────────────────────┼─────────────────────────────────┤
+    │  API REST backend (15 modules)      │  ✓  Réalisé                     │
+    │  Authentification JWT + Refresh     │  ✓  Réalisé                     │
+    │  Contrôle d'accès RBAC              │  ✓  Réalisé                     │
+    │  Algorithme de recommandation       │  ✓  Réalisé                     │
+    │  Tests unitaires et d'intégration   │  ✓  Réalisé (260 tests)         │
+    │  Pipeline CI/CD (GitHub Actions)    │  ✓  Réalisé                     │
+    │  Documentation API (Swagger/OpenAPI)│  ✓  Réalisé                     │
+    │  Interface mobile React Native      │  ○  Non réalisé (squelette)     │
+    │  Scanner de codes-barres            │  ○  Non réalisé                 │
+    └─────────────────────────────────────┴─────────────────────────────────┘
+
+    2.2  Jalons de l'intervention
+    ──────────────────────────────
+
+    ┌──────────┬───────────────────────────────────────────┬──────────────┐
+    │  Phase   │  Contenu                                  │  Statut      │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  1       │  Algorithme de recommandation (produit    │  Terminé     │
+    │          │  scalaire normalisé)                      │              │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  2       │  Tests automatisés Vitest + Supertest,    │  Terminé     │
+    │          │  isolation transactionnelle               │              │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  3       │  Authentification JWT, refresh tokens,    │  Terminé     │
+    │          │  bcrypt                                   │              │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  4       │  RBAC — rôles ADMIN / USER, middlewares   │  Terminé     │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  5       │  Pagination et filtres avancés            │  Terminé     │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  6       │  Sécurité HTTP (Helmet, rate limiting,    │  Terminé     │
+    │          │  validation Zod)                          │              │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  7       │  Documentation API Swagger / OpenAPI 3.0  │  Terminé     │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  8       │  Pipeline CI/CD GitHub Actions            │  Terminé     │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  9       │  Frontend React Native / Expo             │  Reporté     │
+    ├──────────┼───────────────────────────────────────────┼──────────────┤
+    │  10      │  README et onboarding développeur         │  Terminé     │
+    └──────────┴───────────────────────────────────────────┴──────────────┘
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+3.  ARCHITECTURE TECHNIQUE MISE EN PLACE
+═══════════════════════════════════════════════════════════════════════════════
+
+    3.1  Stack technique
+    ─────────────────────
+
+    ┌─────────────────────┬────────────────────────────────────────────────┐
+    │  Couche             │  Technologies                                  │
+    ├─────────────────────┼────────────────────────────────────────────────┤
+    │  Backend            │  Node.js 22 · Express 5 · TypeScript           │
+    │  ORM / Migrations   │  Prisma 6 · MySQL 8                            │
+    │  Authentification   │  JWT (jsonwebtoken) · bcrypt (12 rounds)       │
+    │  Validation         │  Zod                                           │
+    │  Sécurité HTTP      │  Helmet · express-rate-limit                   │
+    │  Tests              │  Vitest 4 · Supertest                          │
+    │  Documentation API  │  swagger-jsdoc · swagger-ui-express            │
+    │  CI/CD              │  GitHub Actions · MySQL 8 (service container)  │
+    │  Frontend (prévu)   │  React Native · Expo · Zustand · Axios         │
+    └─────────────────────┴────────────────────────────────────────────────┘
+
+    3.2  Architecture applicative
+    ──────────────────────────────
+
+    L'API repose sur une architecture en couches stricte :
+
+      Service (logique métier + accès Prisma)
+          ↓
+      Controller (traduction HTTP ↔ service)
+          ↓
+      Route (déclaration URL + middlewares de validation et d'autorisation)
+
+    Cette séparation garantit la testabilité unitaire de chaque couche
+    indépendamment des autres. Les 15 modules fonctionnels (User, Beer,
+    Brewery, Category, Rating, Pairing, Criterion, UserCriteria, BeerCriteria,
+    Quiz, QuizzSession, QuizzQuestion, QuestionChoice, Recommendation, Auth)
+    suivent chacun ce même patron.
+
+    3.3  Schéma de base de données
+    ────────────────────────────────
+
+    Le schéma Prisma compte 17 modèles. Les éléments structurants sont :
+
+      •  Soft delete sur User, Beer et Rating (champ deletedAt)
+      •  Table RefreshToken pour la gestion du cycle de vie des tokens
+      •  Enum Role (ADMIN / USER) et QuizzSessionStatus
+         (IN_PROGRESS / COMPLETED / ABANDONED)
+      •  Contraintes d'unicité sur les couples critiques
+         (email utilisateur, couple user/beer pour la notation,
+          couple user/critère pour les préférences)
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+4.  TRAVAUX RÉALISÉS
+═══════════════════════════════════════════════════════════════════════════════
+
+    4.1  Développement backend
+    ───────────────────────────
+
+    L'ensemble des 15 modules fonctionnels a été développé et testé. Chaque
+    module expose un CRUD complet (avec soft delete là où c'est pertinent),
+    des règles métier spécifiques validées côté service, et des schémas Zod
+    pour la validation des entrées.
+
+    L'algorithme de recommandation constitue la pièce centrale du projet. Il
+    calcule un score de compatibilité par produit scalaire normalisé entre le
+    vecteur de préférences de l'utilisateur (UserCriteria, construit à la
+    complétion du quiz) et celui de chaque bière active (BeerCriteria). Les
+    scores sont persistés en base et servis triés par ordre décroissant.
+
+    Le moteur de quiz pilote l'alimentation automatique des préférences : à
+    la complétion d'une session, les réponses sont converties en UserCriteria
+    via une transaction atomique (upsert), garantissant la cohérence des
+    données même en cas d'exécution concurrente.
+
+    4.2  Tests automatisés
+    ───────────────────────
+
+    ┌────────────────────────────┬───────────────────────────────────────┐
+    │  Indicateur                │  Valeur                               │
+    ├────────────────────────────┼───────────────────────────────────────┤
+    │  Total tests               │  260  (120 unitaires + 140 intégration)│
+    │  Fichiers de test          │  27                                   │
+    │  Couverture — Statements   │  84,37 %                              │
+    │  Couverture — Branches     │  70,71 %                              │
+    │  Couverture — Fonctions    │  87,71 %                              │
+    │  Couverture — Lignes       │  84,44 %                              │
+    └────────────────────────────┴───────────────────────────────────────┘
+
+    La stratégie d'isolation des tests repose sur un mécanisme original :
+    un Proxy Prisma intercepte tous les appels à la base et les redirige vers
+    une transaction active. Chaque test d'intégration ouvre une transaction,
+    exécute le scénario, puis force un rollback via une erreur sentinelle
+    (RollbackError). La base n'est jamais polluée entre les tests, sans
+    recourir à des mocks.
+
+    L'exécution parallèle de fichiers (fileParallelism) est désactivée pour
+    prévenir les deadlocks sur l'instance MySQL partagée.
+
+    4.3  Authentification et sécurisation
+    ────────────────────────────────────────
+
+    Le système d'authentification met en œuvre :
+
+      •  Hachage des mots de passe avec bcrypt (coût 12)
+      •  Access token JWT à durée de vie courte (1 heure)
+      •  Refresh token à longue durée (7 jours), stocké en base, avec
+         rotation automatique à chaque utilisation
+      •  Révocation explicite à la déconnexion
+      •  Rate limiting sur le endpoint de connexion (5 tentatives / minute)
+
+    Le contrôle d'accès est géré par deux middlewares composables :
+    requireAdmin (accès réservé au rôle ADMIN) et requireOwnerOrAdmin
+    (accès réservé au propriétaire de la ressource ou à un administrateur).
+    L'ensemble de la matrice de permissions est couvert par des tests
+    d'intégration dédiés.
+
+    4.4  Documentation API et CI/CD
+    ─────────────────────────────────
+
+    La documentation OpenAPI 3.0 est générée depuis des annotations JSDoc
+    colocalisées avec les déclarations de routes. Elle est exposée en temps
+    réel via Swagger UI à l'adresse /api/docs et reste toujours synchronisée
+    avec le code.
+
+    Le pipeline GitHub Actions se déclenche à chaque push sur main ou
+    develop et à chaque Pull Request. Il enchaîne six étapes : checkout du
+    code, installation des dépendances, génération du client Prisma,
+    application du schéma sur un conteneur MySQL 8, compilation TypeScript,
+    exécution de la suite de tests complète. Un merge vers main est bloqué
+    automatiquement si l'une de ces étapes échoue.
+
+    4.5  Frontend — état et architecture prévue
+    ─────────────────────────────────────────────
+
+    Le frontend n'a pas été développé dans cette version du projet. La
+    décision a été prise de consolider entièrement le backend — qualité,
+    sécurité, couverture de tests — avant d'entamer l'interface.
+
+    Un squelette Expo fonctionnel est en place (client Axios configuré,
+    répertoires de stores et composants créés). L'architecture cible est
+    documentée : deux navigateurs (AuthNavigator / AppNavigator), quatre
+    stores Zustand par domaine (auth, bières, quiz, recommandations),
+    intercepteur Axios pour la gestion silencieuse du cycle de vie des
+    tokens, stockage sécurisé via expo-secure-store.
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+5.  RÉSULTATS DU RECETTAGE
+═══════════════════════════════════════════════════════════════════════════════
+
+    Le recettage complet est détaillé dans le document annexe :
+    recettage.txt.  Les paragraphes suivants en présentent la synthèse.
+
+    5.1  Synthèse par module
+    ─────────────────────────
+
+    ┌──────────────────────────────────────┬───────┬────────┬────────┬─────────┬──────────┐
+    │  Module                              │ Total │ Validé │ Échoué │ En att. │ Non appl.│
+    ├──────────────────────────────────────┼───────┼────────┼────────┼─────────┼──────────┤
+    │  AUTH  — Authentification            │  12   │   8    │   0    │    1    │     3    │
+    │  BEER  — Fiches bières               │  11   │   9    │   0    │    0    │     2    │
+    │  BREW  — Fiches brasseries           │   6   │   4    │   0    │    0    │     2    │
+    │  SCAN  — Scanner de codes-barres     │   4   │   0    │   0    │    0    │     4    │
+    │  QUIZ  — Quiz d'orientation          │   7   │   5    │   0    │    0    │     2    │
+    │  BIERO — Bièrodex et notation        │   7   │   6    │   0    │    0    │     1    │
+    │  RECO  — Recommandations             │   6   │   5    │   0    │    0    │     1    │
+    │  RECH  — Recherche avancée           │   6   │   5    │   0    │    0    │     1    │
+    │  SEC   — Sécurité                    │   9   │   7    │   0    │    1    │     1    │
+    │  PERF  — Performance                 │   5   │   2    │   0    │    0    │     3    │
+    │  COMPAT — Compatibilité              │   4   │   1    │   0    │    0    │     3    │
+    │  ACCESS — Accessibilité              │   4   │   0    │   0    │    0    │     4    │
+    ├──────────────────────────────────────┼───────┼────────┼────────┼─────────┼──────────┤
+    │  TOTAL                               │  81   │  52    │   0    │    2    │    27    │
+    └──────────────────────────────────────┴───────┴────────┴────────┴─────────┴──────────┘
+
+    Taux de validation (cas testables)  :  52 / 54  =  96,3 %
+    Couverture globale du cahier des charges  :  52 / 81  =  64,2 %
+
+    Les 27 cas "Non applicable" sont intégralement liés à l'interface mobile
+    (scanner, écrans de navigation, gestion des tokens côté client,
+    compatibilité Android/iOS, accessibilité). Aucune anomalie fonctionnelle
+    n'a été détectée sur le périmètre backend.
+
+    5.2  Anomalies constatées
+    ──────────────────────────
+
+    ┌──────────┬──────────────────────────────────────────────┬──────────┬────────────────┐
+    │  Réf.    │  Description                                 │ Sévérité │  Statut        │
+    ├──────────┼──────────────────────────────────────────────┼──────────┼────────────────┤
+    │  ANO-01  │  Rate limiting non testable en environnement │  Mineur  │  Vérification  │
+    │          │  automatisé (NODE_ENV=test désactive le      │          │  manuelle req. │
+    │          │  middleware). Vérification manuelle requise  │          │  en production │
+    │          │  sur instance de production.                 │          │                │
+    ├──────────┼──────────────────────────────────────────────┼──────────┼────────────────┤
+    │  ANO-02  │  Tests E2E Maestro (7 parcours définis)      │  Majeur  │  Bloqué —      │
+    │          │  non exécutables en l'absence de frontend.   │          │  dépend du     │
+    │          │                                              │          │  frontend       │
+    └──────────┴──────────────────────────────────────────────┴──────────┴────────────────┘
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+6.  RECOMMANDATIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+    Les recommandations suivantes sont formulées à l'issue de l'intervention,
+    classées par ordre de priorité.
+
+    ┌────┬────────────────────────────────────────────────────┬────────────┐
+    │  # │  Recommandation                                    │  Priorité  │
+    ├────┼────────────────────────────────────────────────────┼────────────┤
+    │  1 │  Développer le frontend React Native en suivant    │  Haute     │
+    │    │  l'architecture définie (AuthNavigator,            │            │
+    │    │  AppNavigator, stores Zustand, intercepteur Axios) │            │
+    │    │  pour lever les 27 cas "Non applicable".           │            │
+    ├────┼────────────────────────────────────────────────────┼────────────┤
+    │  2 │  Valider manuellement le rate limiting (ANO-01)    │  Haute     │
+    │    │  sur l'environnement de production avant la mise   │            │
+    │    │  en ligne.                                         │            │
+    ├────┼────────────────────────────────────────────────────┼────────────┤
+    │  3 │  Exécuter les 7 scénarios Maestro dès que le       │  Haute     │
+    │    │  frontend est fonctionnel (ANO-02).                │            │
+    ├────┼────────────────────────────────────────────────────┼────────────┤
+    │  4 │  Déployer le backend sur VPS (Docker Compose +     │  Moyenne   │
+    │    │  Nginx + Let's Encrypt) conformément à la          │            │
+    │    │  stratégie de mise en production documentée.       │            │
+    ├────┼────────────────────────────────────────────────────┼────────────┤
+    │  5 │  Compléter la couverture de branches (70,71 %)     │  Basse     │
+    │    │  en ciblant les blocs conditionnels non couverts,  │            │
+    │    │  notamment dans les services de recommandation     │            │
+    │    │  et d'authentification.                            │            │
+    ├────┼────────────────────────────────────────────────────┼────────────┤
+    │  6 │  Implémenter le scanner de codes-barres            │  Basse     │
+    │    │  (react-native-vision-camera) une fois le          │            │
+    │    │  frontend de base stabilisé.                       │            │
+    └────┴────────────────────────────────────────────────────┴────────────┘
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+7.  CONCLUSION
+═══════════════════════════════════════════════════════════════════════════════
+
+    L'intervention a permis de livrer un backend Node.js/Express complet,
+    sécurisé et testé, couvrant l'intégralité des exigences fonctionnelles
+    du cahier des charges relatives à la couche serveur.
+
+    Les fondations techniques posées — architecture en couches, contrat
+    ApiResponse<T>, RBAC, rotation des tokens, 260 tests avec isolation
+    transactionnelle, pipeline CI/CD — constituent une base solide pour la
+    suite du projet. L'API est documentée, déployable et prête à être
+    consommée par un client mobile.
+
+    Le recettage confirme l'absence d'anomalie fonctionnelle sur le périmètre
+    livré (96,3 % de validation sur les cas testables). Les 27 cas non
+    exécutés sont intégralement liés au frontend, dont le développement
+    représente la prochaine étape naturelle et la plus structurante pour
+    la livraison d'une version utilisable de Zythonomie.
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ANNEXES
+═══════════════════════════════════════════════════════════════════════════════
+
+    Annexe A  —  Procès de recettage complet          recettage.txt
+    Annexe B  —  Plan de test détaillé (260 tests)    TEST_PLAN.md
+    Annexe C  —  Dossier technique                    dossier.txt
+    Annexe D  —  Roadmap et jalons projet             PROJECT.md
+    Annexe E  —  Pipeline CI/CD                       .github/workflows/ci.yml
+    Annexe F  —  Documentation API interactive        http://localhost:3000/api/docs
