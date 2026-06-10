@@ -1,0 +1,743 @@
+================================================================================
+TESTS — STRATÉGIE, CONCEPTION ET MISE EN OEUVRE
+================================================================================
+
+
+1. STRATÉGIE DE TESTS ET CONCEPTION DU PLAN
+────────────────────────────────────────────
+
+1.1 La pyramide de tests comme fil directeur
+--------------------------------------------
+
+Dès la phase de conception du backend, nous avons adopté une stratégie de tests
+structurée autour de la pyramide classique à trois niveaux : tests unitaires à la
+base, tests d'intégration au milieu, et tests end-to-end (E2E) au sommet.
+
+Ce modèle guide non seulement la répartition du volume de tests — les unitaires
+sont plus nombreux que les tests d'intégration, eux-mêmes plus nombreux que les
+E2E — mais aussi les responsabilités de chaque niveau. Les tests unitaires valident
+la logique métier en isolation. Les tests d'intégration vérifient que la chaîne
+HTTP complète (middleware, validation, controller, service, base de données) se
+comporte correctement de bout en bout. Les tests E2E valident les parcours
+utilisateur réels sur l'application mobile.
+
+Pour les deux premiers niveaux, le choix s'est porté sur Vitest couplé à
+Supertest. Vitest est natif TypeScript, plus léger que Jest et s'intègre sans
+friction dans un projet Node.js moderne. Supertest permet de simuler des requêtes
+HTTP réelles sur l'instance Express de l'application sans avoir à démarrer un
+serveur réseau, ce qui maintient les tests rapides et déterministes. Pour les
+tests E2E, l'outil retenu est Maestro : un framework déclaratif (fichiers YAML)
+cross-platform iOS et Android, dont l'exécution est prévue dès la livraison du
+frontend React Native.
+
+
+1.2 Du plan de test comme outil de pilotage
+--------------------------------------------
+
+La stratégie s'est concrétisée dans un document de plan de test (TEST_PLAN.md)
+qui ne sert pas uniquement de documentation : c'est un outil de pilotage vivant,
+mis à jour au fil des sprints.
+
+Chaque cas de test est identifié par un ID structuré (ex. U-RATE-02 pour un test
+unitaire du service Rating, I-AUTH-06 pour un test d'intégration Auth) et porte
+un statut explicite : implémenté (✅), manquant (❌) ou partiel (⚠️). Cette
+granularité permet, à n'importe quel moment, de savoir précisément ce qui est
+couvert et ce qui reste à faire.
+
+La conception des cas de test suit un principe simple : chaque règle métier ou
+contrainte technique se traduit en au moins un cas de test positif et un cas
+négatif. Par exemple, la règle métier imposant qu'un utilisateur ne peut noter
+une bière qu'une seule fois donne naissance à deux cas distincts : U-RATE-02
+vérifie que le service lève une erreur 409 RATING_ALREADY_EXISTS lors d'un doublon
+sur le même couple utilisateur-bière, et I-RATE-02 vérifie que l'API retourne bien
+un HTTP 409 lorsque cette règle est violée via un appel HTTP réel.
+
+Les tests de sécurité sont intégrés dans ce même plan dès la conception, en
+référence aux catégories OWASP Top 10 API. Ils ne sont pas traités comme un ajout
+tardif mais comme des cas de test à part entière. Par exemple, le cas S-07 (BOLA
+— Broken Object Level Authorization) vérifie qu'un utilisateur ne peut pas accéder
+aux données d'un autre utilisateur, et le cas S-08 valide qu'il est impossible
+de s'auto-promouvoir au rôle ADMIN via l'endpoint de mise à jour du profil.
+
+
+================================================================================
+
+2. LES TESTS EN PRATIQUE
+════════════════════════════════════════════════════════════════════════════════
+
+2.1 Tests unitaires — La logique métier en isolation
+------------------------------------------------------
+
+Les tests unitaires portent exclusivement sur les services (src/services/). Ce
+sont des fonctions TypeScript pures qui contiennent toute la logique métier de
+l'application. Tester ce niveau en isolation — sans passer par les routes HTTP —
+permet de valider précisément chaque branche de logique, chaque code d'erreur
+attendu, et chaque calcul métier.
+
+Un exemple représentatif est le test de l'algorithme de recommandation. Le coeur
+du moteur de recommandation repose sur un produit scalaire normalisé entre le
+vecteur de préférences de l'utilisateur (UserCriteria) et le vecteur de
+caractéristiques de chaque bière (BeerCriteria). Plutôt que de se contenter de
+vérifier que la fonction "ne plante pas", le test construit un exemple numérique
+connu à l'avance : l'utilisateur a les scores c1=4 et c2=2, la bière a les scores
+c1=3 et c2=5. Le résultat attendu est (4×3 + 2×5) / 2 = 11. Cette approche
+garantit que l'algorithme est non seulement fonctionnel, mais mathématiquement
+correct, et qu'une régression sur le calcul sera immédiatement détectée.
+
+Les tests unitaires couvrent également les cas limites : bière soft-deleted exclue
+du calcul, utilisateur sans critères retournant une liste vide, session déjà
+terminée ne pouvant être complétée une seconde fois, ou score de critère hors de
+la borne [0, 5] déclenchant une erreur 422.
+
+
+2.2 Tests d'intégration — La chaîne HTTP complète
+---------------------------------------------------
+
+Les tests d'intégration utilisent Supertest pour envoyer de véritables requêtes
+HTTP à l'application Express et vérifier l'intégralité de la chaîne : validation
+Zod, middleware d'authentification JWT, middleware de contrôle d'accès RBAC,
+controller, service et base de données.
+
+Un exemple illustrant bien la valeur de ce niveau est la vérification du contrôle
+d'accès sur la création d'une catégorie. Deux tests portent sur le même endpoint
+POST /api/categories avec le même payload valide. Le premier est exécuté avec un
+token JWT de rôle USER et doit recevoir un HTTP 403 (accès refusé). Le second est
+exécuté avec un token ADMIN et doit recevoir un HTTP 201 (création réussie). Un
+seul test suffit à valider simultanément la route, le middleware de vérification
+du rôle et le controller.
+
+Le test le plus complexe du projet est le flow de recommandation de bout en bout :
+démarrer une session de quiz, répondre à chaque question, compléter la session,
+déclencher le calcul de recommandations, puis récupérer les résultats via l'API
+et vérifier que les bières sont triées par score décroissant. Ce flux unique met
+en jeu six endpoints différents et cinq tables de base de données, couvrant en
+un seul test l'ensemble de la fonctionnalité principale du projet.
+
+Toutes les réponses API sont vérifiées contre le contrat ApiResponse<T> : chaque
+réponse doit contenir un champ success booléen, les données dans data, et en cas
+d'erreur un objet error avec un code métier identifiable (ex. USER_NOT_FOUND,
+RATING_ALREADY_EXISTS).
+
+
+2.3 Tests E2E — Parcours utilisateurs mobiles (planifiés)
+----------------------------------------------------------
+
+Le troisième niveau de la pyramide concerne les parcours utilisateurs complets sur
+l'application mobile. Sept scénarios ont été définis dans le plan de test :
+inscription, connexion/déconnexion, passage d'un quiz de préférences, consultation
+des recommandations, notation d'une bière, tentative d'accès sans authentification
+et gestion d'un message d'erreur sur credentials invalides.
+
+L'outil retenu est Maestro, dont la syntaxe YAML déclarative permet d'écrire des
+scénarios lisibles sans nécessiter de compétences de développement avancées, et
+qui s'exécute aussi bien sur simulateur iOS qu'Android.
+
+Ces tests sont techniquement spécifiés mais leur exécution est conditionnée à la
+livraison du frontend React Native, qui relève d'une autre phase du projet. Cette
+situation est documentée comme telle dans le plan de test, distinguant clairement
+ce qui est manquant par choix de priorisation de ce qui ne peut simplement pas
+encore être exécuté.
+
+
+2.4 Exécution et couverture
+----------------------------
+
+L'ensemble des tests s'exécute via une seule commande à la racine du backend :
+
+    npm test           — exécution de tous les tests
+    npm run test:coverage — génération du rapport de couverture HTML et JSON
+
+Au 15 mai 2026, la suite compte 260 tests répartis sur 27 fichiers (120 tests
+unitaires, 140 tests d'intégration). Les métriques de couverture sont :
+
+    Statements  : 84,37 %   (740 / 876)
+    Branches    : 70,71 %   (206 / 291)
+    Functions   : 87,71 %   (180 / 205)
+    Lines       : 84,44 %   (731 / 866)
+
+La couverture par zone est particulièrement révélatrice : les routes atteignent
+98,24 % (la quasi-totalité des endpoints est testée), la couche lib est à 100 %,
+et les controllers — qui étaient à 0 % couverts en début de phase de tests — sont
+désormais à 79,67 %.
+
+
+================================================================================
+
+3. ISOLATION DE LA BASE DE DONNÉES — LE MÉCANISME DE TRANSACTION ROLLBACK
+════════════════════════════════════════════════════════════════════════════════
+
+L'un des défis techniques centraux de la mise en place des tests est l'isolation :
+comment s'assurer que chaque test part d'un état propre, sans données résiduelles
+d'un test précédent, et sans avoir à réinitialiser la base de données entre chaque
+exécution ?
+
+L'approche classique consiste à mocker la couche d'accès aux données : remplacer
+Prisma par un objet factice dont on contrôle les réponses. Cette solution présente
+un inconvénient majeur — le mock peut diverger silencieusement du comportement
+réel de la base de données, produisant des tests qui passent mais ne reflètent pas
+la réalité.
+
+Nous avons opté pour une approche différente : tester sur la vraie base de données
+MySQL, mais isoler chaque test dans une transaction qui est systématiquement
+annulée (rollback) à la fin du test, quelle qu'en soit l'issue.
+
+Le mécanisme repose sur deux composants. D'abord, un proxy Prisma configuré dans
+setup.ts : ce proxy intercepte tous les appels à Prisma dans le code de production
+et les redirige vers le client transactionnel actif au lieu du client global. Ce
+mécanisme est transparent pour les services — ils continuent d'utiliser leur import
+Prisma habituel sans aucune modification.
+
+Ensuite, la fonction withTestTransaction (with-transaction.ts) : elle ouvre une
+transaction Prisma interactive, positionne le client transactionnel sur le proxy,
+exécute la fonction de test, puis force une erreur de rollback. Prisma annule alors
+toutes les écritures effectuées durant le test, ramenant la base à son état initial.
+
+Ce processus peut être illustré par un test de ratings : la factory createTestUser()
+et createTestBeer() insèrent de vraies lignes en base, l'appel à POST /api/ratings
+crée une vraie note avec toutes les vérifications de contraintes, puis — une fois
+le test terminé — tout est effacé comme si rien ne s'était passé. Le test suivant
+repart d'une base propre.
+
+Cette approche garantit des tests réalistes (les contraintes de clés étrangères,
+les règles d'unicité et les triggers Prisma fonctionnent réellement), une isolation
+parfaite entre les tests, et aucune dépendance à un état de données particulier
+dans la base.
+
+
+================================================================================
+
+4. CI/CD — INTÉGRATION CONTINUE
+════════════════════════════════════════════════════════════════════════════════
+
+4.1 Pipeline en place
+----------------------
+
+Un pipeline d'intégration continue a été mis en place via GitHub Actions
+(.github/workflows/ci.yml). Il se déclenche automatiquement sur chaque push vers
+les branches main et develop, ainsi que sur l'ouverture de toute pull request
+vers ces branches.
+
+Le pipeline démarre un service container MySQL 8 directement dans le runner GitHub,
+ce qui évite toute dépendance à une base de données externe. Les étapes s'enchaînent
+dans l'ordre suivant :
+
+  1. Checkout du code source
+  2. Installation des dépendances Node.js (npm ci — installation reproductible)
+  3. Génération du client Prisma (npx prisma generate)
+  4. Application du schéma sur la base de test (npx prisma db push)
+  5. Compilation TypeScript (npm run build) — vérifie l'absence d'erreurs de types
+  6. Exécution de la suite de tests complète (npm run test)
+
+Tout push qui introduit une régression ou une erreur de compilation est bloqué
+avant qu'il ne puisse atteindre la branche principale. Les variables d'environnement
+nécessaires (DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET) sont injectées dans le
+job CI via les secrets GitHub.
+
+
+4.2 Évolutions prévues
+-----------------------
+
+Plusieurs ajouts sont planifiés pour les prochaines phases du projet :
+
+- Publication automatique du rapport de couverture : à chaque exécution de la CI,
+  le rapport généré par Vitest sera transmis à un service de suivi (Codecov ou
+  archivé comme artefact GitHub) afin de suivre l'évolution de la couverture dans
+  le temps et de détecter les régressions de couverture sur les pull requests.
+
+- Vérification de types stricte : une étape tsc --noEmit sera ajoutée pour
+  s'assurer que le code compile sans erreur de types TypeScript, en complément
+  des tests fonctionnels.
+
+- Tests E2E en CI : une fois le frontend React Native livré, les scénarios Maestro
+  seront intégrés dans un job CI dédié exécuté sur simulateur, via Maestro Cloud
+  ou un runner macOS hébergé par GitHub.
+
+
+================================================================================
+
+5. ÉTAT DES LIEUX, LIMITES ET POINTS DE FRICTION
+════════════════════════════════════════════════════════════════════════════════
+
+5.1 Ce qui a été fait
+----------------------
+
+La couverture de test a progressé de manière significative au fil des phases. En
+début de phase de tests, huit modules de controllers n'avaient aucune couverture.
+Tous sont désormais couverts. Le gain sur les métriques principales est de l'ordre
+de +28 points de pourcentage sur les statements et +43 points sur les fonctions.
+
+L'ensemble des modules métier critiques disposent de tests unitaires complets :
+auth, user, beer, rating, criterion, user-criteria, beer-criteria, quiz session et
+recommandation. Les tests d'intégration couvrent les quatorze fichiers de routes
+de l'API, incluant les vérifications RBAC, la validation des entrées et les règles
+métier transversales (pagination, soft delete, contraintes d'unicité).
+
+
+5.2 Ce qui reste à faire
+-------------------------
+
+Les éléments restants relèvent essentiellement de cas de test de sécurité avancés
+et de la couche E2E :
+
+- Le test de rate-limiting (S-10) : vérifier le blocage après cinq tentatives de
+  connexion échouées. Ce cas n'est pas encore implémenté pour les raisons détaillées
+  dans la section suivante.
+- Le test de confusion d'algorithme JWT (S-17) : forger un token signé avec
+  l'algorithme "none" et vérifier qu'il est rejeté avec un 401.
+- Le test de comportement en production (S-19) : vérifier qu'une erreur 500 ne
+  contient aucune stack trace ni détail interne lorsque NODE_ENV=production.
+- Les sept parcours E2E mobiles, conditionnés au frontend.
+
+
+5.3 Limites et points de friction
+-----------------------------------
+
+Deux points de friction concrets ont été rencontrés au cours de l'élaboration des
+tests.
+
+Le premier concerne le rate-limiting. La protection contre les attaques par force
+brute sur le endpoint de login (limitée à cinq requêtes par minute) est désactivée
+automatiquement lorsque la variable NODE_ENV est positionnée sur "test", pour éviter
+que les tests d'intégration ne se bloquent mutuellement. Cette décision technique
+raisonnable a pour conséquence directe que le comportement de rate-limiting ne peut
+pas être testé dans les conditions d'exécution normales. Le tester nécessiterait
+soit d'introduire un flag de configuration dédié aux tests, soit de monter un
+environnement de test séparé avec un NODE_ENV différent — une complexité qui n'a
+pas été jugée prioritaire au regard de la valeur produite.
+
+Le second point concerne les tests E2E. Les sept parcours utilisateurs ont été
+entièrement spécifiés dans le plan de test, mais leur exécution est bloquée par
+l'avancement du frontend React Native, qui relève d'une autre équipe et d'une
+autre phase du projet. Cette dépendance externe illustre une limite inhérente aux
+tests E2E dans un contexte de développement multi-équipe : la qualité de la
+couverture de bout en bout est tributaire de la synchronisation des livraisons.
+
+Sur le plan des contraintes techniques, la désactivation du parallélisme de
+fichiers (fileParallelism: false dans la configuration Vitest) mérite d'être
+signalée. Les tests étant tous exécutés sur la même instance MySQL via des
+transactions imbriquées, l'exécution parallèle provoque des conflits de verrous.
+Désactiver le parallélisme résout le problème mais allonge mécaniquement le temps
+d'exécution de la suite. C'est un compromis accepté, qui pourrait être levé à
+l'avenir par l'adoption d'une base de données en mémoire dédiée aux tests ou par
+une base séparée par worker.
+
+Enfin, la couverture de branches à 70,71 % — inférieure aux autres métriques —
+s'explique par la difficulté à déclencher certaines branches d'erreur internes sans
+recourir à des mocks. Par exemple, le comportement de l'application lorsque la
+connexion à la base de données est perdue, ou les chemins de code activés uniquement
+en mode production, ne peuvent pas être exercés naturellement dans l'environnement
+de test actuel.
+
+
+================================================================================
+DÉVELOPPEMENT BACKEND — GRANDES ÉTAPES CLÉS
+================================================================================
+
+
+1. FONDATIONS ARCHITECTURALES
+────────────────────────────────────────────
+
+1.1 Architecture en couches
+-----------------------------
+
+Avant d'écrire la moindre fonctionnalité, l'architecture du backend a été fixée
+autour d'une séparation stricte en trois couches : service, controller et route.
+
+Le service concentre l'intégralité de la logique métier et de l'accès à la base
+de données via Prisma. Il ne connaît ni Express ni le protocole HTTP : il reçoit
+des données brutes et retourne des objets ou lève des erreurs métier. Cette
+isolation garantit que la logique peut être testée directement, sans simuler une
+requête HTTP.
+
+Le controller assure la traduction entre le monde HTTP et le service : il extrait
+les données de la requête (req.body, req.params, req.user), appelle le service
+correspondant et renvoie la réponse formatée. Son rôle est volontairement minimal.
+
+La route déclare l'URL, la méthode HTTP et la séquence de middlewares à appliquer
+avant d'atteindre le controller. C'est également là que sont définis les schémas
+de validation Zod propres à chaque endpoint.
+
+Ce découpage permet une évolution indépendante de chaque couche et facilite
+considérablement les tests : les tests unitaires appellent directement les services,
+les tests d'intégration passent par les routes.
+
+
+1.2 Contrat de réponse uniforme et gestion des erreurs
+-------------------------------------------------------
+
+Tous les endpoints de l'API, sans exception, retournent une réponse au format
+ApiResponse<T> : soit { success: true, data: T } en cas de succès, soit
+{ success: false, error: { code, message, details } } en cas d'erreur. Ce contrat
+unique simplifie considérablement le traitement côté frontend, qui n'a jamais à
+gérer des formats de réponse différents selon l'endpoint appelé.
+
+La gestion des erreurs repose sur une classe HttpError qui encapsule le code HTTP,
+un code métier lisible (USER_NOT_FOUND, RATING_ALREADY_EXISTS, VALIDATION_ERROR)
+et un message. Lorsqu'une règle métier est violée dans un service, une HttpError
+est levée. Un middleware error-handler placé en bout de chaîne Express la capture
+automatiquement et construit la réponse d'erreur formatée. Conséquence directe :
+aucun controller ne contient de bloc try/catch, et les erreurs ne peuvent pas être
+silencieusement avalées ou retournées dans un format non standard.
+
+La validation des entrées suit le même principe d'uniformité. Un middleware
+générique validate(schema, source) accepte un schéma Zod et la cible de validation
+(body, params ou query). Sur les paramètres d'URL, l'utilisation de z.coerce.number()
+assure la conversion automatique de la chaîne de caractères en entier et rejette
+toute valeur non numérique avec un 400, avant même que la requête n'atteigne le
+service.
+
+
+================================================================================
+
+2. LE MOTEUR DE RECOMMANDATION — FONCTIONNALITÉ CLEF
+════════════════════════════════════════════════════════════════════════════════
+
+2.1 Le problème métier
+-----------------------
+
+La fonctionnalité centrale de Zythonomie est la recommandation personnalisée de
+bières. Pour qu'elle fonctionne, il faut pouvoir mesurer la compatibilité entre
+le profil gustatif d'un utilisateur et le profil sensoriel de chaque bière. Les
+deux profils s'expriment sur un ensemble commun de 25 critères sensoriels : amer,
+sucré, fruité, houblon, caramel, pétillant, corps, etc.
+
+Chaque critère est évalué sur une échelle de 1 à 5. L'utilisateur acquiert ses
+scores en répondant à un quiz de préférences. Chaque bière dispose de scores
+renseignés par les administrateurs.
+
+
+2.2 Le modèle de données
+-------------------------
+
+La modélisation s'appuie sur deux tables de liaison à clé composite, chacune
+portant un score décimal.
+
+UserCriteria associe un utilisateur à un critère et stocke son score de préférence.
+Cette table est alimentée automatiquement lors de la complétion d'une session de
+quiz : pour chaque question répondue, la note choisie est stockée puis agrégée en
+score de critère.
+
+BeerCriteria associe une bière à un critère avec son score sensoriel. Ces données
+sont renseignées par les administrateurs et constituent le profil objectif de chaque
+bière.
+
+BeerRecommendedUser stocke les résultats du calcul de compatibilité : le couple
+(utilisateur, bière) avec le score calculé. Cette table est entièrement recalculée
+à chaque appel de refresh — ce qui garantit l'idempotence et permet de recalculer
+les recommandations chaque fois que les données changent.
+
+
+2.3 L'algorithme — Du premier jet au produit scalaire normalisé
+----------------------------------------------------------------
+
+L'algorithme initial de recommandation calculait la proximité entre deux profils
+par une mesure de distance : pour chaque critère commun, il calculait 1 - |diff| / 5.
+Ce score pénalisait les écarts mais ne valorisait pas les affinités fortes.
+
+Il a été remplacé par un produit scalaire normalisé, mathématiquement plus adapté
+au problème :
+
+    score = Σ (score_user_i × score_beer_i) / nombre_critères_communs
+
+Le produit scalaire mesure l'alignement des préférences : plus deux scores sont
+élevés sur le même critère, plus ils contribuent fortement au score final. Un
+utilisateur qui aime beaucoup l'amer (score 5) et une bière très amère (score 5)
+produisent une contribution de 25 sur ce seul critère, quand une bière peu amère
+(score 1) ne contribue que pour 5.
+
+La normalisation par le nombre de critères communs est un choix délibéré : sans
+elle, une bière renseignée sur 25 critères serait mécaniquement favorisée par
+rapport à une bière renseignée sur 5, indépendamment de leur pertinence. La
+division ramène tous les scores à une base comparable.
+
+Si une bière ne partage aucun critère avec l'utilisateur, le score est nul et la
+bière est exclue des résultats : elle n'est pas recommandable si on ne peut pas
+évaluer la compatibilité.
+
+
+2.4 Le flow complet — De la session de quiz aux recommandations
+----------------------------------------------------------------
+
+Le parcours de recommandation implique cinq étapes successives, chacune
+correspondant à un appel API distinct.
+
+La première étape démarre une session de quiz : l'utilisateur choisit un quiz,
+une session est créée en base avec le statut IN_PROGRESS. Le nombre total de
+questions est calculé à ce moment et stocké dans la session pour suivre la
+progression.
+
+La deuxième étape enregistre les réponses question par question. Chaque appel
+soumet l'identifiant du choix sélectionné. La session incrémente un compteur de
+réponses et vérifie qu'une même question ne peut pas être répondue deux fois (règle
+métier d'unicité par session et par question, vérifiée au niveau service).
+
+La troisième étape complète la session. Lors de cet appel, le service parcourt
+toutes les réponses enregistrées, regroupe les choix par critère, calcule la moyenne
+des note_value pour chaque critère et effectue un upsert dans UserCriteria. Si
+l'utilisateur avait déjà des scores (session précédente), ils sont mis à jour. La
+session passe au statut COMPLETED.
+
+La quatrième étape déclenche le calcul des recommandations. Le service récupère
+tous les UserCriteria de l'utilisateur et tous les BeerCriteria des bières actives
+(non soft-deleted), calcule le produit scalaire normalisé pour chaque bière ayant
+au moins un critère commun, puis remplace entièrement les recommandations existantes
+de cet utilisateur dans BeerRecommendedUser via une transaction atomique (DELETE
+suivi des CREATE). L'opération est idempotente : un double appel produit le même
+résultat.
+
+La cinquième étape retourne simplement la liste des recommandations triées par
+score décroissant, avec les données de chaque bière associée.
+
+
+================================================================================
+
+3. AUTHENTIFICATION SÉCURISÉE
+════════════════════════════════════════════════════════════════════════════════
+
+L'authentification a été traitée dans une phase dédiée, après les premières
+fonctionnalités. Ce choix assumé, documenté dans la roadmap, permet de ne pas
+mélanger la logique métier et les considérations de sécurité en début de projet,
+tout en s'assurant de les adresser avant toute mise en production.
+
+La sécurisation des mots de passe repose sur bcrypt avec 12 rounds de hachage.
+Le mot de passe en clair n'est jamais persisté ni retourné dans aucune réponse API
+— les sélects Prisma excluent explicitement le champ password de tous les résultats.
+
+L'authentification utilise une architecture double-token : un access token JWT de
+courte durée (1h) transporté dans le header Authorization, et un refresh token de
+longue durée (7 jours) persisté en base de données dans une table RefreshToken
+dédiée. Cette séparation permet de renouveler silencieusement la session sans
+redemander les credentials, tout en limitant la fenêtre d'exposition en cas de
+vol de l'access token.
+
+Le refresh token implémente une rotation à chaque utilisation : l'ancien token est
+révoqué et un nouveau est émis. Un token ne peut donc être utilisé qu'une seule fois.
+La table RefreshToken conserve la date de révocation, ce qui permet de détecter
+une tentative de réutilisation.
+
+Le middleware authenticate extrait le Bearer token, vérifie la signature JWT et
+pose req.user = { id, role } sur la requête. Les services ne connaissent jamais
+l'objet Request d'Express.
+
+
+================================================================================
+
+4. CONTRÔLE D'ACCÈS RBAC
+════════════════════════════════════════════════════════════════════════════════
+
+Le contrôle d'accès est organisé autour d'une matrice de permissions à deux rôles :
+USER et ADMIN. Les opérations de lecture du catalogue (bières, brasseries, catégories,
+critères) sont accessibles à tout utilisateur authentifié. Les mutations (création,
+modification, suppression des données de référence) sont réservées au rôle ADMIN.
+Certaines ressources, comme les notes ou les recommandations, sont accessibles
+uniquement au propriétaire de la donnée ou à un ADMIN.
+
+Cette matrice se concrétise en deux middlewares distincts. Le middleware requireAdmin
+vérifie simplement que req.user.role est ADMIN et renvoie un 403 dans le cas
+contraire. Le middleware requireOwnerOrAdmin accepte en paramètre le nom d'un
+paramètre d'URL et vérifie que sa valeur correspond à l'identifiant de l'utilisateur
+authentifié, ou que celui-ci est ADMIN. Par exemple, requireOwnerOrAdmin('userId')
+sur DELETE /ratings/:id empêche un utilisateur de supprimer la note d'un autre.
+
+Une attention particulière a été portée à la protection contre l'auto-promotion :
+dans le service de mise à jour de l'utilisateur, le champ role est filtré
+explicitement si l'appelant n'est pas ADMIN. Il n'est pas possible pour un USER
+de s'élever au rôle ADMIN en incluant ce champ dans son payload de mise à jour.
+
+
+================================================================================
+
+5. QUALITÉ ET HARDENING
+════════════════════════════════════════════════════════════════════════════════
+
+5.1 Pagination générique
+-------------------------
+
+Plutôt que d'implémenter la logique de pagination dans chaque service de liste,
+un helper générique paginate<T> a été créé dans src/lib/paginate.ts. Il prend un
+modèle Prisma, des arguments de requête, et les paramètres page et limit, et
+retourne systématiquement { data: T[], meta: { page, limit, total, totalPages } }.
+Ce helper est utilisé sur neuf endpoints de liste. Un schéma Zod réutilisable
+valide les paramètres de pagination sur toutes ces routes avec des valeurs par
+défaut (page=1, limit=20) et un plafond à 100 résultats par page.
+
+
+5.2 Sécurité HTTP et protection du login
+-----------------------------------------
+
+Helmet est appliqué globalement sur l'application Express via un seul appel
+app.use(helmet()). Il positionne automatiquement les headers de sécurité HTTP
+recommandés sur toutes les réponses.
+
+Le endpoint de connexion est protégé par un rate limiter qui bloque une adresse
+IP après cinq tentatives de connexion échouées en l'espace d'une minute et retourne
+un 429 avec le code TOO_MANY_REQUESTS. Cette protection est désactivée en
+environnement de test pour ne pas perturber la suite de tests d'intégration —
+un compromis évoqué plus en détail dans la section Tests.
+
+
+5.3 Seed de développement
+--------------------------
+
+Le script de seed utilise faker pour générer des données réalistes (noms, emails,
+dates, descriptions). Il a été rendu entièrement idempotent en remplaçant les
+insertions simples par des upsert avec des clés stables. Le seed peut être relancé
+à tout moment sans produire d'erreur de doublon — une nécessité pratique pour les
+cycles de développement itératif et les réinitialisations fréquentes de la base.
+
+
+================================================================================
+
+6. DOCUMENTATION API
+════════════════════════════════════════════════════════════════════════════════
+
+La documentation API a été intégrée directement dans le code source sous forme
+d'annotations JSDoc au format OpenAPI, colocalisées avec les déclarations de routes.
+Elles sont interprétées par swagger-jsdoc pour générer une spécification OpenAPI 3.0
+complète, exposée via swagger-ui-express à l'adresse /api/docs.
+
+Ce choix évite le problème classique de la documentation qui dérive du code :
+toute modification d'une route se fait au même endroit que son annotation.
+Les schémas de composants partagés (ApiSuccess, ApiError, PaginationMeta, modèles
+Beer, User, Tokens, etc.) sont définis une seule fois et référencés par les
+annotations de toutes les routes concernées.
+
+
+================================================================================
+FRONTEND — CE QUI ÉTAIT PRÉVU ET POURQUOI IL N'A PAS ÉTÉ DÉVELOPPÉ
+================================================================================
+
+1. ÉTAT ACTUEL ET ARCHITECTURE PRÉVUE
+────────────────────────────────────────────
+
+Le frontend de Zythonomie repose sur React Native avec Expo. En l'état, il se
+limite à un squelette fonctionnel : l'application se lance, un client Axios est
+configuré et pointé sur le backend, et les dossiers structurants (store, hooks,
+components) sont en place. Aucun écran métier n'a été implémenté.
+
+L'architecture cible avait été définie et documentée avant même de commencer le
+développement. Elle s'organise autour de trois axes principaux.
+
+La navigation devait séparer clairement deux contextes : un navigateur
+d'authentification (Login / Register) et un navigateur principal accessible une
+fois connecté, avec les écrans de catalogue de bières, de quiz, de recommandations
+et de profil. Cette séparation garantit qu'un utilisateur non authentifié ne peut
+jamais atteindre les écrans protégés.
+
+La gestion d'état devait s'appuyer sur Zustand, découpé en stores ciblés par
+domaine métier (authentification, bières, quiz, recommandations) plutôt qu'un store
+global monolithique. Ce découpage facilite la maintenance et les tests unitaires
+de la logique d'état.
+
+L'intégration avec le backend devait reposer sur un double intercepteur Axios :
+le premier injecte automatiquement le Bearer token dans chaque requête sortante,
+le second capte les réponses 401 pour déclencher un refresh silencieux du token
+et rejouer la requête initiale. Ce mécanisme, couplé au stockage sécurisé des
+tokens via expo-secure-store, devait rendre la gestion de session totalement
+transparente pour les écrans.
+
+Le contrat ApiResponse<T> défini côté backend a justement été conçu en anticipant
+cette intégration : un format uniforme en succès comme en erreur simplifie le
+traitement côté client et rend le code des écrans plus lisible.
+
+
+2. PRIORISATION ET RAISONS DU NON-DÉVELOPPEMENT
+────────────────────────────────────────────────
+
+Le frontend n'a pas été développé par choix de priorisation, et non par manque
+de planification.
+
+Le backend constitue le coeur de valeur du projet : c'est lui qui porte l'algorithme
+de recommandation, les règles métier, la sécurité et les données. Livrer une
+interface sur des fondations fragiles ou non testées aurait exposé l'ensemble du
+projet à des risques plus importants qu'un frontend absent. La décision a donc été
+prise de consolider entièrement le backend — fonctionnalités, sécurisation,
+couverture de tests — avant d'entamer le développement de l'interface.
+
+Cette stratégie a eu un coût en temps. Les phases d'authentification (gestion du
+cycle de vie des tokens, rotation, révocation), de contrôle d'accès (matrice de
+permissions, middlewares RBAC) et surtout de tests (260 tests, mise en place du
+mécanisme d'isolation transactionnelle) ont chacune demandé plus de temps que
+prévu initialement. Le temps restant en fin de projet ne permettait pas de
+développer un frontend fonctionnel sans sacrifier la qualité du backend ou la
+couverture de tests.
+
+Cette situation a une conséquence directe sur les tests E2E : les sept parcours
+utilisateurs mobiles définis dans le plan de test (inscription, quiz, consultation
+des recommandations, notation) sont entièrement spécifiés et prêts à être écrits
+en Maestro, mais ne peuvent pas être exécutés sans application mobile. La base
+est posée ; le frontend représente la prochaine étape naturelle du projet.
+
+
+================================================================================
+STRATÉGIE DE MISE EN PRODUCTION
+================================================================================
+
+1. PRINCIPE GÉNÉRAL
+────────────────────────────────────────────
+
+La stratégie retenue repose sur une séparation nette entre l'intégration continue,
+déjà en place, et le déploiement continu, qui constitue la prochaine étape. Le
+pipeline CI actuel garantit qu'aucun code cassé n'atteint les branches principales.
+La mise en production y ajoutera un déclenchement automatique du déploiement dès
+qu'un push sur main réussit l'ensemble des vérifications.
+
+
+2. INFRASTRUCTURE CIBLE
+────────────────────────────────────────────
+
+Le backend Node.js/Express sera déployé sur un VPS (type Hetzner ou DigitalOcean)
+via Docker. L'image Docker du backend est construite à partir d'un Dockerfile
+multi-stage : une première étape compile le TypeScript, une seconde copie
+uniquement le JavaScript compilé et les dépendances de production dans l'image
+finale. Cela produit une image légère, sans outillage de développement.
+
+La base de données MySQL sera hébergée sur ce même serveur, dans un conteneur
+dédié, orchestré avec le conteneur applicatif via Docker Compose. Un volume
+Docker persistant garantit la survie des données entre les redémarrages et les
+déploiements.
+
+Les variables sensibles (DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET) ne sont
+jamais incluses dans l'image : elles sont injectées au moment du démarrage via
+un fichier .env hébergé sur le serveur et exclu du dépôt Git.
+
+
+3. PIPELINE DE DÉPLOIEMENT
+────────────────────────────────────────────
+
+Le déploiement sera intégré dans le workflow GitHub Actions existant sous la forme
+d'un job deploy conditionnel, qui ne s'exécute qu'après la réussite complète du
+job de tests. Il s'active uniquement sur la branche main, pas sur develop.
+
+Le job de déploiement suit la séquence suivante. Depuis le runner GitHub Actions,
+une connexion SSH est établie vers le serveur de production (la clé privée étant
+stockée en tant que secret GitHub). Le serveur effectue un git pull pour récupérer
+la dernière version du code, reconstruit l'image Docker avec docker compose build,
+puis redémarre le service avec docker compose up -d. Prisma applique ensuite les
+migrations en attente via prisma migrate deploy avant que l'application
+n'accepte les nouvelles connexions.
+
+Un healthcheck exposé à l'adresse /health permet à Docker de vérifier que le
+conteneur est opérationnel avant de le déclarer prêt. Si le conteneur ne répond
+pas dans le délai imparti, Docker Compose annule le déploiement et conserve
+l'instance précédente — offrant un mécanisme de rollback automatique sans
+intervention manuelle.
+
+
+4. GESTION DES SECRETS ET SÉCURITÉ
+────────────────────────────────────────────
+
+Les secrets de production (chaîne de connexion DB, clés JWT, clé SSH de
+déploiement) sont stockés exclusivement dans les secrets chiffrés du dépôt GitHub.
+Ils sont injectés dans le pipeline au moment de l'exécution et ne transitent
+jamais en clair dans les logs ni dans les images Docker.
+
+Le serveur de production expose uniquement les ports 80 et 443 vers l'extérieur.
+Un reverse proxy Nginx est placé devant le conteneur applicatif pour gérer la
+terminaison TLS (certificat Let's Encrypt via Certbot) et transférer le trafic
+HTTPS vers le port interne de l'application. Le port 3306 de MySQL reste fermé
+à tout trafic externe.
+
+Cette architecture garantit que la surface d'attaque exposée publiquement se
+limite au strict nécessaire, tout en conservant la capacité de faire évoluer
+chaque composant indépendamment.

@@ -1,0 +1,174 @@
+1. Présentation générale du projet
+
+
+1.1. Contexte
+Dans notre entourage, beaucoup de personnes affirment ne pas aimer la bière, alors
+qu’en réalité, elles n’ont simplement pas encore trouvé celle qui correspond à leurs
+goûts. Nous avons fait le choix de créer une application permettant à tous ses utilisateurs de découvrir la bière qui leur serait idéale, en se basant sur leurs goûts et sur ce qu’ils cherchent. 
+
+Pourquoi  le nom de la marque ?
+Le nom Zythonomie vient d’un assemblage de deux mot : 
+la Zythologie (mot composé des mots grecs ζῦθος, zythos (bière) et λόγος logos (étude, discours)) est la discipline qui se consacre à l'étude de la bière, du brassage et des brasseries, tant au point de vue historique, que technique ou gustatif.
+la terminaison -nomie qui est un suffixe, provenant du grec ancien nomos «ce qui est attribué en partage; loi, règle, coutume». Indiquant alors un lien avec la connaissance ou la science des lois d'un domaine ou avec leur étude ainsi que l'idée de diriger, d'administrer, de gérer, de régir selon les lois, les règles établies.
+
+Ainsi le mot Zythonomie transmettrait l’idée de la connaissance de la bière.
+
+Ce projet, pourquoi ? 
+La bière est un sujet commun entre les différents membres du groupe, nous avons constaté un besoin représenté par les personnes ne trouvant pas de bières qui leur convient mais cherchant tout de même à en découvrir. Pourtant, contrairement au vin et aux spiritueux, aucune application de référence n’existe pour la bière. Cette application sera une app mobile grand public, intuitive et engageante, elle utilisera un algorithme basé sur des catégories. Son principe repose sur trois grands piliers : le scan, la recommandation personnalisée et le suivi gustatif.
+
+
+Synthèse des besoins utilisateurs – Études quantitatives (menée du 19/12/25 au 09/01/26)
+1.2. Problématiques majeures identifiées : 
+
+Boisson sans alcool : le boom du NoLo
+Poids lourds du secteur ou jeunes start-up, les marques se mettent, depuis les années 2020, aux boissons sans alcool. Ce marché porte un nom, le marché des NoLo, ou No-low. Le « No » (sans alcool), et « low » (faiblement alcoolisés) sont en pleine progression parmi les acteurs du secteur des boissons, et le segment plaît de plus pour différentes raisons convergentes :
+La baisse de la consommation quotidienne : En France, comme d'ailleurs dans le reste de l'Europe et aux États-Unis, la courbe est à la baisse depuis les années 60.
+Un changement sociétal générationnel : Les comportements de consommation varient selon les âges. La tendance de la consommation de boissons sans alcool ou à teneur réduite en alcool progresse en France (32 % en 2025 (+4 pts vs 2024 // +5 pts vs 2021)* et est particulièrement marquée chez les jeunes de 18 à 25 ans.
+L'essor de plusieurs types de boissons : les no-low les plus consommés* sont les bières no-low (61% -4 PTS // 2024) car plébiscitées de grandes marques, leur développement a pris de l'avance par rapport aux autres boissons sur une bonne décennie. Une croissance due en partie à leur succès auprès des 50-65 ans. Un autre type de boisson occupe une place importante depuis l'apparition des spiritueux now-low (61% -4 PTS // 2024), ce sont les cocktails no-low qui ont gagné peu à peu du terrain pour plaire aux jeunes consommateurs (42% -6 PTS // 2024). Le vin no-low (17% + 7 PTS // 2024), dont la production émerge timidement, avance timidement, mais séduit toutefois de plus en plus dans les usages de consommation. Quant aux effervescents no-low, ils suivent la vague de ce succès (14%) et font leur apparition sur le marché en 2025.
+L'attachement aux marques : 85 % des consommateurs* de boissons no-low déclarent acheter toujours ou fréquemment les mêmes produits, ce qui témoigne de la fidélité à une marque et à un goût signature.
+
+
+Une tendance partie pour durer
+Le constat est là : on consomme moins, mais mieux : parmi les principales motivations de consommation chez les Français*, la première est la volonté de consommer moins d'alcool (50 %), suivie par la santé (40 %) puis le goût (35 %).
+D'un côté, il a les flexibuveurs qui aiment faire des pauses de temps en temps dans leur consommation d'alcool : ces buveurs occasionnels recherchent, avec les No-Low, de vrais instants de plaisir. Ils aiment la nouveauté, l'originalité de nouvelles boissons et sont d'un naturel curieux. De l'autre, il y a ceux qui s'abstiennent totalement, que ce soit pour des raisons de santé, de vie, de religion, philosophie, de goût.
+Buveurs occasionnels ou abstèmes, l'idée n'est pas d'afficher les raisons toutes personnelles qui nous éloignent de l'alcool, mais tout simplement d'admettre que nos habitudes changent et qu'il est grand temps de proposer ces alternatives plus saines et inclusives. Nombreux bars et comptoirs ont déjà ajouté les no-low à leur carte des boissons, parce que le sans alcool est rentré dans les mœurs.
+
+Phénomène de mode, préoccupation ou principes de vie, la tendance des alcools NoLo est là. Vin, bière, spiritueux, boisson soft, les Maisons et marques existantes, l’ont bien compris et proposent une offre de plus en plus variée de produits adaptés sans alcool ou à faible teneur en alcool. Le secteur continue de croître rapidement, grâce à l’apport de nombreux nouveaux entrants.
+L'inventivité et la réussite de ces acteurs augmentent et le marché du marché des No-Low connaît un véritable essor sur tous les types de boisson. À titre d'indication, le salon Wine Paris 2025, salon mondial du vin, compte près de 300 exposants spécialisés dans le sans alcool. Deux fois plus que l'année précédente !
+Parmi les acteurs, certains proposent des boissons innovantes, loin de la standardisation tout en restant sophistiquées, tandis que d'autres, tout aussi inspirantes, reprennent les codes des boissons traditionnelles.
+
+*Sources : Édition 2025 du Baromètre SOWINE/Dynata
+Réticence à la découverte
+Sur 71 personnes interrogées, 48% des répondants se montrent peu enclins à découvrir de nouvelles bières. Beaucoup se contentent de marques ou de types qu’ils connaissent déjà, ce qui peut limiter l’usage d’une application centrée sur la découverte et la recommandation. Cette réticence constitue un frein car la valeur principale de l’application repose sur la curiosité et l’envie d’explorer de nouveaux profils gustatifs.
+Téléchargement d’application
+Sur 71 personnes, 43 disent être réticents à télécharger une application associée à l’alcool, pour des raisons d’image, de valeurs personnelles ou de modération de leur consommation. D’autres peuvent percevoir ce type d’application comme non essentiel à leurs besoins, notamment face à la saturation actuelle du marché des applications mobiles. Cette barrière peut réduire le taux de téléchargement, en particulier chez les consommateurs occasionnels ou peu impliqués dans l’univers de la bière.
+Système économique
+Le modèle économique freemium semble plaire, car 86% des répondants se disent ok avec ce modèle économique. Cependant il peut constituer une contrainte pour les utilisateurs occasionnels. Ces derniers, utilisant l’application de manière ponctuelle, peuvent ne pas percevoir suffisamment de valeur pour passer à une version payante.
+1.3. Segmentation des utilisateurs
+- Trouver des bières qui leur corresponde
+- Avoir des recommandations par des professionnels
+- Avoir plus d’informations sur les bières qu’ils consomment
+- Avoir un répertoire personnel des bières testés 
+- Trouver des bières similaire à celles qu’ils aiment 
+Objectifs : 
+- Proposer des services uniques permettant de répondre à un besoin réel 
+- Se démarquer de la concurrence dans ce milieu 
+- Mettre en place un service de rémunération profitable aux utilisateurs comme à l’équipe de développement 
+
+Cibles finales
+L’application s’adressera d’abord aux amateurs de bière qui souhaitent découvrir de nouvelles saveurs ou affiner leurs connaissances. Mais elle visera également les consommateurs occasionnels ou réticents, ceux qui pensent ne pas aimer la bière et que l’on pourrait ‘’convertir’’ en leur faisant découvrir celle qui correspondrait à leurs goûts.
+
+
+
+5. Fonctionnalités de l’application attendues
+
+
+5.1. Fonctionnalités générales
+
+Fiche de bières et brasseries
+Fiche descriptive de la brasserie
+Info historique, localisation, galerie bières de la brasserie
+Fiche descriptive de la bière
+Info historique, descriptif saveur, note
+Scanner permettant d’avoir des informations sur les différentes bières
+Redirige vers la fiche de la bière
+Quiz d’orientation 
+Quiz qui rend une liste de proposition de bières qui correspond au préférence de l’utilisateur
+Compte utilisateur
+Reprend les info utilisateur
+Accès au bièrodex
+Bierodex
+Collection des bières déjà bu 
+Possibilité de noter bière
+Recherche avancée avec filtre
+
+5.2. Besoin non fonctionnel 
+Performance
+Pour garantir un temps de chargement rapide des fiches bières et du scanner, l’application utilise React Native pour une expérience proche du natif, couplée à une API Node.js et une base de données MySQL pour des requêtes efficaces. Le scanner, basé sur react-native-vision-camera, est conçu pour une détection instantanée des codes-barres et QR codes, minimisant les latences. Les données seront préchargées et mises en cache pour réduire les temps d’attente, assurant ainsi une navigation fluide même avec une connexion limitée.
+Sécurité
+La protection des données utilisateurs (comptes, notes, préférences) est assurée par une authentification JWT, chiffrant les échanges entre le frontend et le backend. Les mots de passe sont hachés en base de données, et les tokens sont stockés de manière sécurisée côté client SecureStore. Les accès sensibles sont protégés par des middlewares, garantissant que seules les requêtes authentifiées peuvent interagir avec les données personnelles.
+
+Compatibilité
+L’application est développée en React Native, ce qui permet un fonctionnement natif sur Android et iOS sans nécessiter de code spécifique à chaque plateforme. Les bibliothèques utilisées sont testées et compatibles avec les deux systèmes d’exploitation, assurant une expérience uniforme pour tous les utilisateurs, quel que soit leur appareil.
+Accessibilité
+L’interface intuitive est conçue pour être accessible aux débutants, avec des parcours simplifiés et des feedbacks visuels clairs. Les boutons et menus sont organisés de manière logique, et des outils comme des infobulles ou des tutoriels intégrés guident l’utilisateur. L’application respecte également les bonnes pratiques d’ergonomie mobile pour faciliter son utilisation par tous.
+
+
+6. Solutions technique
+
+Choix de l’hébergement
+Critère
+Infomaniak
+Hostinger
+AWS Lightsail
+OVHcloud
+Coût
+10-30 CHF/mois
+5-20 €/mois
+5-80 $/mois
+5-30 €/mois
+Facilité d’utilisation
+Interface simple, support réactif
+Interface intuitive, support 24/7
+Interface technique, documentation
+Interface technique, support réactif
+Scalabilité
+Possible (upgrades payants)
+Possible (upgrades payants)
+Très scalable (intégration AWS)
+Possible (upgrades payants)
+Localisation serveurs
+Suisse/France
+Europe/USA/
+Asie
+Monde entier
+Europe/USA/
+Canada
+Support technique
+Réactif, en français
+Réactif, multilingue
+Documentation riche, support payant
+Réactif, en français
+Flexibilité
+Bonne (accès root, choix OS)
+Bonne (accès root, choix OS)
+Excellente (intégration AWS)
+Bonne (accès root, choix OS)
+Sécurité
+Bonne (DDoS, firewall)
+Bonne (DDoS, firewall)
+Excellente (sécurité AWS)
+Bonne (DDoS, firewall)
+
+
+Pour la phase de prototype, le VPS fourni par l’école est la solution la plus adaptée. Il permet de développer et tester l’application dans un environnement contrôlé, sans coût supplémentaire, tout en bénéficiant d’un accès direct aux ressources nécessaires pour valider les fonctionnalités clés. Bien que les ressources puissent être limitées, cela suffit amplement pour un prototype. De plus, ce choix évite les contraintes logistiques et financières liées à un hébergement externe pendant la phase de développement.
+
+En revanche, pour une mise en production, Infomaniak se révèle être le meilleur compromis. Ce fournisseur suisse propose des serveurs localisés en Europe, une bonne réactivité et un support technique en français, ce qui simplifie la gestion des éventuels problèmes. Contrairement à des solutions comme AWS ou OVHcloud, Infomaniak offre une interface intuitive et des coûts maîtrisés, adaptés à un projet en croissance sans nécessiter une infrastructure surdimensionnée. La possibilité de scaler progressivement les ressources permet d’anticiper une augmentation du trafic, tout en gardant un budget raisonnable. Enfin, la proximité géographique des serveurs garantit des temps de réponse optimaux pour les utilisateurs en France et en Europe, ce qui est crucial pour une application mobile où la fluidité est essentielle.
+Choix des langages
+Frontend : React Native, Flutter ou Cordova ?
+Pour le développement de l’application mobile, trois options se dégagent : React Native, Flutter et Cordova. React Native, basé sur JavaScript/TypeScript, permet de créer des applications cross-platform avec une performance proche du natif, tout en bénéficiant d’une communauté très active et d’un écosystème riche. Flutter, de son côté, utilise le langage Dart et offre une expérience utilisateur très fluide grâce à sa compilation native, ainsi qu’une grande flexibilité pour le design. Cependant, sa courbe d’apprentissage est plus raide, surtout si l’équipe maîtrise déjà JavaScript. Enfin, Cordova, qui repose sur des technologies web HTML/CSS/JS, est plus simple à prendre en main, mais ses performances sont limitées par l’utilisation d’une WebView, ce qui peut nuire à l’expérience utilisateur, notamment pour des fonctionnalités comme le scanner ou les animations.
+Pour ce projet, React Native s’impose comme le meilleur choix pour le frontend. Il combine la performance native, une communauté active et une compatibilité avec les compétences existantes de l’équipe. Cela permet de se concentrer sur le développement des fonctionnalités clés sans perdre de temps à maîtriser un nouveau langage comme Dart.
+Backend : Node.js + Express ou Firebase Functions ? 
+Pour le backend, deux approches possibles: Node.js + Express et Firebase Functions. Node.js, avec son framework Express, offre une flexibilité totale pour concevoir une API sur mesure, adaptée aux besoins spécifiques du projet. Il permet aussi une intégration transparente avec une base de données relationnelle comme MySQL. À l’inverse, Firebase Functions propose une solution serverless, plus simple à déployer et à scaler automatiquement, mais moins flexible pour des logiques métiers complexes. Firebase brille surtout pour des projets rapides ou des applications où le backend est minimaliste, mais il peut devenir limitant si le projet évolue vers des fonctionnalités plus avancées.
+Côté backend, Node.js + Express est retenu pour sa flexibilité et son contrôle total sur l’API. Cela permet de concevoir une architecture adaptée aux besoins spécifiques du projet, comme la gestion des requêtes pour le scanner ou le quiz, tout en s’intégrant parfaitement avec MySQL. Bien que Firebase Functions soit plus simple à déployer, il ne répond pas aussi bien aux exigences de personnalisation et de complexité requises pour ce projet.
+Base de données : MySQL ou NoSQL (Firestore/MongoDB) ? 
+MySQL, une base de données relationnelle, est idéale pour des projets où les données sont structurées et interconnectées, comme c’est le cas ici : une bière est liée à une brasserie, un utilisateur a un Bièrodex, etc. MySQL excelle pour les requêtes complexes et offre une stabilité éprouvée. À l’opposé, les bases NoSQL comme Firestore ou MongoDB sont plus flexibles pour des données non structurées ou évolutives, mais elles sont moins adaptées aux relations complexes. Firestore, par exemple, est optimisé pour des applications temps réel et légères, mais il manque de fonctionnalités avancées comme les jointures, ce qui peut compliquer la gestion des relations entre bières, brasseries et utilisateurs.
+
+MySQL est choisi pour la base de données en raison de sa structure relationnelle, qui correspond parfaitement aux besoins du projet. Les relations entre bières, brasseries et utilisateurs sont clairement définies, et MySQL permet de les gérer efficacement avec des requêtes SQL avancées. Bien que NoSQL offre une flexibilité accrue, la stabilité, la documentation et la compatibilité de MySQL avec Node.js en font un choix plus adapté pour un projet où la robustesse et la clarté priment.
+Choix techniques complémentaires
+Justification de l’Élaborations d’une API Interne pour les Bières et Brasseries
+Pour répondre aux besoins spécifiques de l’application, notamment la gestion des fiches bières et brasseries ainsi que le quiz d’orientation, le développement d’une API interne s’impose. Les bières, stockées dans une base de données MySQL, contiennent beaucoup d’informations structurées. Une API interne permet de centraliser et optimiser les requêtes, en offrant des endpoints dédiés pour récupérer les informations nécessaires, tout en garantissant une performance et une flexibilité pour adapter les filtres en fonction de l’évolution des besoins.
+De plus, une API interne permet de découpler le frontend de la logique métier et de la base de données, facilitant ainsi la maintenance et les mises à jour futures. Elle offre également un contrôle total sur la manière dont les données sont exposées et sécurisées, ce qui est essentiel pour protéger les informations sensibles des utilisateurs. Enfin, cette approche est nécessaire car les APIs externes, nous limiteraient dans la personnalisation des données.
+
+
+Scanner de Codes-Barres : react-native-vision-camera
+Pour la fonctionnalité de scanner de codes-barres et QR codes, plusieurs solutions existent, comme des bibliothèques open-source ou des outils payants comme Scandit ou ZXing Pro. Parmi les alternatives gratuites, react-native-vision-camera s’impose comme le choix le plus pertinent pour ce projet. Contrairement à des solutions payantes comme Scandit (qui propose des fonctionnalités avancées de scan mais avec un coût élevé), react-native-vision-camera offre une performance native optimisée, une intégration fluide avec React Native, et une gratuité totale, ce qui est intéressant pour ce projet. Bien que des solutions comme ZXing (open-source) ou Google ML Kit plus puissant pour la détection, mais plus complexe à intégrer soient viables. React-native-vision-camera est plus simple d’utilisation, à une documentation complète, gère la majorité des codes-barres. Enfin, cette bibliothèque est activement maintenue, ce qui garantit une compatibilité durable avec les mises à jour d’Android et d’iOS.
+Sécurisation de l’API : JWT (JSON Web Tokens)
+Pour sécuriser les échanges entre le frontend et le backend, plusieurs solutions d’authentification sont envisageables, comme Firebase Auth, OAuth 2.0, ou Passport.js. Cependant, JWT a été retenu pour sa simplicité, sa flexibilité, et son efficacité dans un contexte d’application mobile. Contrairement à Firebase Auth, qui impose une dépendance à l’écosystème Firebase et limite la personnalisation, ou à OAuth 2.0, qui est plus complexe à mettre en place pour un projet de cette envergure, les JWT offrent une solution légère et autonome. Ils permettent de gérer l’authentification de manière décentralisée, sans stocker de sessions côté serveur, ce qui simplifie l’architecture et améliore la scalabilité. De plus, les JWT sont faciles à intégrer avec Node.js via jsonwebtoken et compatibles avec React Native pour le stockage sécurisé des tokens avec SecureStore. Enfin, ils offrent un bon équilibre entre sécurité et simplicité, avec la possibilité d’ajouter des claims personnalisés, ce qui les rend adaptés aux besoins actuels du projet tout en restant évolutifs pour des fonctionnalités futures.
+Outils de Test Unitaire : Jest
+Pour garantir la fiabilité et la maintenabilité du code, nous utiliserons un framework le test unitaire Jest. Jest est le standard de l’écosystème JavaScript/TypeScript, adopté pour sa simplicité, sa rapidité et sa compatibilité avec React Native. Il permet de tester les composants frontend et les fonctions backend. React Native Testing Library, quant à elle, facilite les tests d’interface en simulant les interactions utilisateur, ce qui aurait pu être pertinent dans le cadre du projet. D’autres alternatives comme Mocha ou Enzyme existent, mais Jest offre une intégration native avec React Native et une documentation exhaustive. Enfin, Jest permet de générer des rapports de couverture de code, aidant à identifier les parties non testées et à améliorer la qualité globale du projet.
+
+
+
+Création de Documentation : Swagger + JSDoc
+Pour documenter efficacement l’API interne et le code source, deux outils complémentaires sont retenus : Swagger (OpenAPI) pour l’API et JSDoc pour le code JavaScript/TypeScript. Swagger permet de décrire les endpoints de l’API de manière standardisée, avec des exemples de requêtes/réponses et des schémas de données. Cela facilite la collaboration entre les développeurs frontend et backend, et offre une interface interactive pour tester les routes directement depuis la documentation. Pour le code, JSDoc est idéal car il s’intègre naturellement avec JavaScript/TypeScript et permet de générer une documentation technique claire et accessible, directement dans les commentaires du code. Des alternatives comme Postman (pour l’API) ou TypeDoc (pour le code) sont viables, mais Swagger et JSDoc sont gratuits, largement adoptés et compatibles avec les outils déjà choisis.

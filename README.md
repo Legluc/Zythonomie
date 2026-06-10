@@ -25,19 +25,19 @@ L'utilisateur répond à un quiz de préférences gustatives (amertume, acidité
 
 ## Stack technique
 
-| Couche      | Technologie                                           |
-| ----------- | ----------------------------------------------------- |
-| Runtime     | Node.js 20+                                           |
-| Framework   | Express 5 · TypeScript 6                              |
-| ORM         | Prisma 6                                              |
-| Base de données | MySQL 8                                           |
-| Validation  | Zod 4                                                 |
-| Auth        | JWT (access token 15 min) + Refresh token (7 j)      |
-| Sécurité    | bcrypt · Helmet · express-rate-limit · CORS           |
-| Documentation API | Swagger UI (OpenAPI 3.0) — `/api-docs`          |
-| Tests       | Vitest 4 · Supertest · @faker-js/faker                |
-| Logs        | Morgan                                                |
-| Frontend    | React Native · Expo · Zustand · Axios *(en cours)*   |
+| Couche            | Technologie                                           |
+| ----------------- | ----------------------------------------------------- |
+| Runtime           | Node.js 20+                                           |
+| Framework         | Express 5 · TypeScript 6                              |
+| ORM               | Prisma 6                                              |
+| Base de données   | MySQL 8                                               |
+| Validation        | Zod 4                                                 |
+| Auth              | JWT (access token 15 min) + Refresh token (7 j)       |
+| Sécurité          | bcrypt · Helmet · express-rate-limit · CORS           |
+| Documentation API | Swagger UI (OpenAPI 3.0) — `/api-docs`                |
+| Tests             | Vitest 4 · Supertest · @faker-js/faker                |
+| Logs              | Morgan                                                |
+| Frontend          | React Native · Expo · Zustand · Axios *(en cours)*    |
 
 ---
 
@@ -403,11 +403,24 @@ npm test
 # Mode watch
 npm run test:watch
 
-# Rapport de couverture HTML
+# Rapport de couverture HTML + JSON (v8)
 npm run test:coverage
 ```
 
 Les tests d'intégration utilisent la **même base de données** avec des **transactions rollback** pour isoler chaque test sans réinitialiser le schéma entre les suites.
+
+### Couverture actuelle
+
+| Métrique   | Score    |
+|------------|----------|
+| Statements | **84,37%** |
+| Branches   | **70,71%** |
+| Functions  | **87,71%** |
+| Lines      | **84,44%** |
+
+**Tests** : **260 tests passants** (27 fichiers)
+- **Intégration** : 14 fichiers (140 tests)
+- **Unitaires** : 13 fichiers (120 tests)
 
 ---
 
@@ -415,23 +428,23 @@ Les tests d'intégration utilisent la **même base de données** avec des **tran
 
 ### Modules implémentés
 
-| Module            | Service | Controller | Routes | Particularités                                         |
-| ----------------- | :-----: | :--------: | :----: | ------------------------------------------------------ |
-| Auth              |    ✓    |     ✓      |   ✓    | Register · Login · Refresh · Logout · /me             |
-| User              |    ✓    |     ✓      |   ✓    | CRUD · soft delete · anonymisation mail               |
-| Beer              |    ✓    |     ✓      |   ✓    | CRUD · soft delete · filtres · liaisons brewery/category |
-| Brewery           |    ✓    |     ✓      |   ✓    | CRUD complet                                           |
-| Category          |    ✓    |     ✓      |   ✓    | CRUD · hiérarchie auto-référente                       |
-| Pairing           |    ✓    |     ✓      |   ✓    | CRUD complet                                           |
-| Rating            |    ✓    |     ✓      |   ✓    | CRUD · soft delete · règle 1 note active/couple        |
-| Criterion         |    ✓    |     ✓      |   ✓    | CRUD · DELETE bloqué si en usage                       |
-| UserCriteria      |    ✓    |     ✓      |   ✓    | Upsert · score borné [0, 5]                            |
-| BeerCriteria      |    ✓    |     ✓      |   ✓    | Upsert admin · score borné [0, 5]                      |
-| Quiz              |    ✓    |     ✓      |   ✓    | CRUD · création imbriquée questions + choix            |
-| QuizzQuestion     |    ✓    |     ✓      |   ✓    | CRUD admin · DELETE bloqué si réponses enregistrées    |
-| QuestionChoice    |    ✓    |     ✓      |   ✓    | CRUD admin · DELETE bloqué si réponses enregistrées    |
-| QuizzSession      |    ✓    |     ✓      |   ✓    | Start → answer → complete · auto-upsert UserCriteria   |
-| Recommendation    |    ✓    |     ✓      |   ✓    | GET + refresh · produit scalaire normalisé             |
+| Module            | Service | Controller | Routes | Tests | Particularités                                         |
+| ----------------- | :-----: | :--------: | :----: | :---: | ------------------------------------------------------ |
+| Auth              |    ✓    |     ✓      |   ✓    |  ✓   | Register · Login · Refresh · Logout · /me             |
+| User              |    ✓    |     ✓      |   ✓    |  ✓   | CRUD · soft delete · anonymisation mail               |
+| Beer              |    ✓    |     ✓      |   ✓    |  ✓   | CRUD · soft delete · filtres · liaisons brewery/category |
+| Brewery           |    ✓    |     ✓      |   ✓    |  ✓   | CRUD complet                                           |
+| Category          |    ✓    |     ✓      |   ✓    |  ✓   | CRUD · hiérarchie auto-référente                       |
+| Pairing           |    ✓    |     ✓      |   ✓    |  ✓   | CRUD complet                                           |
+| Rating            |    ✓    |     ✓      |   ✓    |  ✓   | CRUD · soft delete · règle 1 note active/couple        |
+| Criterion         |    ✓    |     ✓      |   ✓    |  ✓   | CRUD · DELETE bloqué si en usage                       |
+| UserCriteria      |    ✓    |     ✓      |   ✓    |  ✓   | Upsert · score borné [0, 5]                            |
+| BeerCriteria      |    ✓    |     ✓      |   ✓    |  ✓   | Upsert admin · score borné [0, 5]                      |
+| Quiz              |    ✓    |     ✓      |   ✓    |  ✓   | CRUD · création imbriquée questions + choix            |
+| QuizzQuestion     |    ✓    |     ✓      |   ✓    |  ✓   | CRUD admin · DELETE bloqué si réponses enregistrées    |
+| QuestionChoice    |    ✓    |     ✓      |   ✓    |  ✓   | CRUD admin · DELETE bloqué si réponses enregistrées    |
+| QuizzSession      |    ✓    |     ✓      |   ✓    |  ✓   | Start → answer → complete · auto-upsert UserCriteria   |
+| Recommendation    |    ✓    |     ✓      |   ✓    |  ✓   | GET + refresh · produit scalaire normalisé             |
 
 ### Fondations techniques
 
@@ -446,12 +459,11 @@ Les tests d'intégration utilisent la **même base de données** avec des **tran
 
 ### Ce qui reste à faire
 
-| Priorité | Sujet                                                          |
-| -------- | -------------------------------------------------------------- |
-| Haute    | Compléter la couverture de tests (unitaires + intégration)     |
-| Haute    | Pagination sur les endpoints restants                          |
-| Moyenne  | Frontend React Native (Expo) — navigation + écrans            |
-| Basse    | Pipeline CI/CD GitHub Actions                                  |
+| Priorité | Sujet                                                          | Statut      |
+| -------- | -------------------------------------------------------------- | ----------- |
+| Haute    | Pagination sur les endpoints restants                          | À faire     |
+| Moyenne  | Frontend React Native (Expo) — navigation + écrans            | À faire     |
+| Basse    | Pipeline CI/CD GitHub Actions                                  | À faire     |
 
 ---
 
@@ -460,7 +472,7 @@ Les tests d'intégration utilisent la **même base de données** avec des **tran
 | Phase | Description                          | Statut      |
 | ----- | ------------------------------------ | ----------- |
 | 1     | Recommandation complète (algo + flow)| ✅ Terminé  |
-| 2     | Tests automatisés (Vitest)           | 🔄 En cours |
+| 2     | Tests automatisés (Vitest)           | ✅ Terminé  |
 | 3     | Authentification JWT                 | ✅ Terminé  |
 | 4     | Rôles & permissions (ADMIN / USER)   | ✅ Terminé  |
 | 5     | Pagination                           | ✅ Terminé  |

@@ -168,16 +168,27 @@ npm run test:coverage     # Rapport de couverture HTML + JSON (v8)
 
 ## 4. Couverture actuelle
 
-> Rapport généré le 20 avril 2026 — `npm run test:coverage`
+> Rapport généré le 15 mai 2026 — `npm run test:coverage`
 
-| Métrique   | Score    | Détail    |
-|------------|----------|-----------|
-| Statements | 55,73 %  | 481 / 863 |
-| Branches   | 55,47 %  | 162 / 292 |
-| Functions  | 43,90 %  | 90 / 205  |
-| Lines      | 55,76 %  | 479 / 859 |
+| Métrique   | Score    | Détail      | Évolution |
+|------------|----------|-------------|-----------|
+| Statements | **84,37%** | 740 / 876 | +28,64% |
+| Branches   | **70,71%** | 206 / 291 | +15,24% |
+| Functions  | **87,71%** | 180 / 205 | +43,81% |
+| Lines      | **84,44%** | 731 / 866 | +28,68% |
 
-**Fichiers à couverture 0 %** (controllers non exercés) : `beer-criteria.controller`, `brewery.controller`, `category.controller`, `criterion.controller`, `pairing.controller`, `question-choice.controller`, `quiz.controller`, `quizz-question.controller`.
+**Tests** : 260 tests passants (27 fichiers)
+- **Intégration** : 14 fichiers (140 tests)
+- **Unitaires** : 13 fichiers (120 tests)
+
+**Couverture par zone** :
+- Routes : 98.24% (exceptionnel)
+- Lib : 100% (parfait)
+- Middleware : 84.78% (bon)
+- Controllers : 79.67% (bon, précédemment 0% pour 8 modules)
+- Services : 79.54% (bon)
+
+**Fichiers désormais couverts** : Tous les controllers et services d'intégration ont des tests.
 
 ---
 
@@ -268,19 +279,19 @@ Légende : ✅ Implémenté · ❌ Manquant · ⚠️ Partiel
 
 | ID | Cas | Statut |
 |---|---|---|
-| U-BEER-01 | `findAllBeers` — retourne les bières actives | ✅ |
-| U-BEER-02 | `findAllBeers` — filtre par `alcool` | ✅ |
-| U-BEER-03 | `findBeerById` — retourne la bière correcte | ✅ |
-| U-BEER-04 | `findBeerById` — 404 `BEER_NOT_FOUND` si inexistante | ✅ |
-| U-BEER-05 | `createBeer` — crée avec liaisons brewery et category | ✅ |
-| U-BEER-06 | `updateBeer` — met à jour les champs fournis | ✅ |
-| U-BEER-07 | `softDeleteBeer` — marque `deleted_at` | ✅ |
-| U-BEER-08 | `findAllBeers` — exclut les bières soft-deleted | ✅ |
-| U-BEER-09 | `addBreweryToBeer` — associe une brasserie | ✅ |
-| U-BEER-10 | `removeBreweryFromBeer` — retire une brasserie | ✅ |
-| U-BEER-11 | `addCategoryToBeer` — associe une catégorie | ✅ |
-| U-BEER-12 | `findAllBeers` — filtre par `breweryId` | ❌ |
-| U-BEER-13 | `findAllBeers` — filtre par `categoryId` | ❌ |
+| U-BEER-01 | `findAllBeers`            — retourne les bières actives               | ✅ |
+| U-BEER-02 | `findAllBeers`            — filtre par `alcool`                       | ✅ |
+| U-BEER-03 | `findBeerById`            — retourne la bière correcte                | ✅ |
+| U-BEER-04 | `findBeerById`            — 404 `BEER_NOT_FOUND` si inexistante       | ✅ |
+| U-BEER-05 | `createBeer`              — crée avec liaisons brewery et category    | ✅ |
+| U-BEER-06 | `updateBeer`              — met à jour les champs fournis             | ✅ |
+| U-BEER-07 | `softDeleteBeer`          — marque `deleted_at`                       | ✅ |
+| U-BEER-08 | `findAllBeers`            — exclut les bières soft-deleted            | ✅ |
+| U-BEER-09 | `addBreweryToBeer`        — associe une brasserie                     | ✅ |
+| U-BEER-10 | `removeBreweryFromBeer`   — retire une brasserie                      | ✅ |
+| U-BEER-11 | `addCategoryToBeer`       — associe une catégorie                     | ✅ |
+| U-BEER-12 | `findAllBeers`            — filtre par `breweryId`                    | ❌ |
+| U-BEER-13 | `findAllBeers`            — filtre par `categoryId`                   | ❌ |
 
 #### Intégration — `/api/beers`
 
@@ -658,28 +669,28 @@ Légende : ✅ Implémenté · ❌ Manquant · ⚠️ Partiel
 **Périmètre** : Authentification · Contrôle d'accès · Stockage données · Validation entrées · Configuration sécurité  
 **Référence** : OWASP Top 10 API 2023
 
-| ID | Référence OWASP | Vecteur | Cas | Statut |
-|---|---|---|---|---|
-| S-01 | API8 — Security Misconfiguration | Stockage mot de passe | Mot de passe stocké haché bcrypt (`$2b$`) — jamais en clair | ✅ |
-| S-02 | API2 — Broken Authentication | JWT | Token invalide → 401 `INVALID_TOKEN` | ✅ |
-| S-03 | API2 — Broken Authentication | JWT | Token expiré → 401 `TOKEN_EXPIRED` | ✅ |
-| S-04 | API2 — Broken Authentication | JWT | Payload JWT contient `sub` (int) et `role` valide | ✅ |
-| S-05 | API2 — Broken Authentication | Contrôle d'accès | 401 sans token sur toutes les routes protégées | ✅ |
-| S-06 | API5 — Broken Function Level Authorization | Contrôle d'accès | 403 USER sur routes réservées ADMIN | ✅ |
-| S-07 | API1 — Broken Object Level Authorization | BOLA / IDOR | 403 accès aux données d'un autre utilisateur | ✅ |
-| S-08 | API5 — Broken Function Level Authorization | Élévation de privilèges | Impossible de s'auto-promouvoir ADMIN via `PUT /users/:id` | ✅ |
-| S-09 | API3 — Broken Object Property Level Auth | Exposition données | Le champ `password` n'est jamais retourné dans les réponses API | ✅ |
-| S-10 | API4 — Unrestricted Resource Consumption | Rate-limiting | Login limité à 5 req/min — 429 au-delà | ❌ |
-| S-11 | API2 — Broken Authentication | Refresh token | Token révoqué ne peut pas être réutilisé (test de rotation) | ❌ |
-| S-12 | API8 — Security Misconfiguration | Validation entrées | Injection via champs string — rejetée par Zod avant toute requête DB | ⚠️ implicite |
-| S-13 | API1 — Broken Object Level Authorization | IDOR | `GET /user-criteria/:userId` d'un autre utilisateur → 403 | ❌ |
-| S-14 | API1 — Broken Object Level Authorization | IDOR | `GET /recommendations/user/:userId` d'un autre utilisateur → 403 | ❌ |
-| S-15 | API8 — Security Misconfiguration | Headers HTTP | Présence des headers Helmet : `X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security` | ❌ |
-| S-16 | API3 — Broken Object Property Level Auth | Mass assignment | `PUT /users/:id` — les champs `id`, `deleted_at`, `role` ne peuvent pas être modifiés par un USER | ❌ |
-| S-17 | API2 — Broken Authentication | JWT algorithm confusion | Token signé avec `alg: none` ou un algorithme symétrique différent → 401 rejeté | ❌ |
-| S-18 | API1 — Broken Object Level Authorization | BOLA sur ratings | `PUT /ratings/:id` et `DELETE /ratings/:id` — utilisateur B ne peut pas modifier la note de l'utilisateur A | ❌ |
-| S-19 | API8 — Security Misconfiguration | Stack trace | Réponse d'erreur en production (`NODE_ENV=production`) ne contient pas de stack trace ni de détails internes | ❌ |
-| S-20 | API8 — Security Misconfiguration | Paramètres numériques | ID non entier dans les params (ex: `/api/beers/abc`) → 400 `VALIDATION_ERROR` (Zod `z.coerce.number()`) | ⚠️ implicite |
+| ID    | Référence OWASP                           | Vecteur                   | Cas               | Statut |
+|---    |---                                        |---                        |---                |---|
+| S-01 | API8 — Security Misconfiguration           | Stockage mot de passe     | Mot de passe stocké haché bcrypt (`$2b$`) — jamais en clair                                                   | ✅ |
+| S-02 | API2 — Broken Authentication               | JWT                       | Token invalide → 401 `INVALID_TOKEN`                                                                          | ✅ |
+| S-03 | API2 — Broken Authentication               | JWT                       | Token expiré → 401 `TOKEN_EXPIRED`                                                                            | ✅ |
+| S-04 | API2 — Broken Authentication               | JWT                       | Payload JWT contient `sub` (int) et `role` valide                                                             | ✅ |
+| S-05 | API2 — Broken Authentication               | Contrôle d'accès          | 401 sans token sur toutes les routes protégées                                                                | ✅ |
+| S-06 | API5 — Broken Function Level Authorization | Contrôle d'accès          | 403 USER sur routes réservées ADMIN                                                                           | ✅ |
+| S-07 | API1 — Broken Object Level Authorization   | BOLA / IDOR               | 403 accès aux données d'un autre utilisateur                                                                  | ✅ |
+| S-08 | API5 — Broken Function Level Authorization | Élévation de privilèges   | Impossible de s'auto-promouvoir ADMIN via `PUT /users/:id`                                                    | ✅ |
+| S-09 | API3 — Broken Object Property Level Auth   | Exposition données        | Le champ `password` n'est jamais retourné dans les réponses API                                               | ✅ |
+| S-10 | API4 — Unrestricted Resource Consumption   | Rate-limiting             | Login limité à 5 req/min — 429 au-delà                                                                        | ❌ |
+| S-11 | API2 — Broken Authentication               | Refresh token             | Token révoqué ne peut pas être réutilisé (test de rotation)                                                   | ❌ |
+| S-12 | API8 — Security Misconfiguration           | Validation entrées        | Injection via champs string — rejetée par Zod avant toute requête DB                                          | ⚠️ implicite |
+| S-13 | API1 — Broken Object Level Authorization   | IDOR                      | `GET /user-criteria/:userId` d'un autre utilisateur → 403                                                     | ❌ |
+| S-14 | API1 — Broken Object Level Authorization   | IDOR                      | `GET /recommendations/user/:userId` d'un autre utilisateur → 403                                              | ❌ |
+| S-15 | API8 — Security Misconfiguration           | Headers HTTP              | Présence des headers Helmet : `X-Frame-Options`, `X-Content-Type-Options`, `Strict-Transport-Security`        | ❌ |
+| S-16 | API3 — Broken Object Property Level Auth   | Mass assignment           | `PUT /users/:id` — les champs `id`, `deleted_at`, `role` ne peuvent pas être modifiés par un USER             | ❌ |
+| S-17 | API2 — Broken Authentication               | JWT algorithm confusion   | Token signé avec `alg: none` ou un algorithme symétrique différent → 401 rejeté                               | ❌ |
+| S-18 | API1 — Broken Object Level Authorization   | BOLA sur ratings          | `PUT /ratings/:id` et `DELETE /ratings/:id` — utilisateur B ne peut pas modifier la note de l'utilisateur A   | ❌ |
+| S-19 | API8 — Security Misconfiguration           | Stack trace               | Réponse d'erreur en production (`NODE_ENV=production`) ne contient pas de stack trace ni de détails internes  | ❌ |
+| S-20 | API8 — Security Misconfiguration           | Paramètres numériques     | ID non entier dans les params (ex: `/api/beers/abc`) → 400 `VALIDATION_ERROR` (Zod `z.coerce.number()`)       | ⚠️ implicite |
 
 ---
 
@@ -717,32 +728,35 @@ Légende : ✅ Implémenté · ❌ Manquant · ⚠️ Partiel
 
 ## 9. Tests manquants — priorisation
 
-### Priorité haute
+### ✅ Priorité haute — COMPLÉTÉE
 
-Ces tests couvrent des fonctionnalités livrées mais non exercées par aucun test HTTP.
+| Action | Module(s) | Statut |
+|---|---|---|
+| Créer `brewery.integration.test.ts` — CRUD complet + 401/403 | Brewery | ✅ 10 tests |
+| Créer `category.integration.test.ts` — CRUD complet + 401/403 | Category | ✅ 11 tests |
+| Créer `pairing.integration.test.ts` — CRUD complet + 401/403 | Pairing | ✅ 11 tests |
+| Créer `quiz.integration.test.ts` — création imbriquée + GET détail | Quiz | ✅ 7 tests |
+| Créer `quizz-question.integration.test.ts` — CRUD + DELETE bloqué | QuizzQuestion | ✅ 10 tests |
+| Créer `question-choice.integration.test.ts` — CRUD + DELETE bloqué | QuestionChoice | ✅ 10 tests |
+| Créer `user-criteria.integration.test.ts` — upsert + contrôle IDOR | UserCriteria | ✅ 9 tests |
+| Créer `beer-criteria.integration.test.ts` — upsert admin + 403 USER | BeerCriteria | ✅ 8 tests |
+| Compléter `user.integration.test.ts` — CRUD + soft delete + auto-promo | User | ✅ 15 tests |
+| Créer `error-handler.test.ts` — tous les chemins d'erreur | Middleware | ✅ 5 tests |
+| Créer `criterion.integration.test.ts` — CRUD complet | Criterion | ✅ 10 tests |
 
-| Action | Module(s) |
-|---|---|
-| Créer `brewery.integration.test.ts` — CRUD complet + 401/403 | Brewery |
-| Créer `category.integration.test.ts` — CRUD complet + 401/403 | Category |
-| Créer `pairing.integration.test.ts` — CRUD complet + 401/403 | Pairing |
-| Créer `quiz.integration.test.ts` — création imbriquée + GET détail | Quiz |
-| Créer `quizz-question.integration.test.ts` — CRUD + DELETE bloqué | QuizzQuestion |
-| Créer `question-choice.integration.test.ts` — CRUD + DELETE bloqué | QuestionChoice |
-| Créer `user-criteria.integration.test.ts` — upsert + contrôle IDOR | UserCriteria |
-| Créer `beer-criteria.integration.test.ts` — upsert admin + 403 USER | BeerCriteria |
-| Compléter `user.integration.test.ts` — CRUD + soft delete + auto-promo | User |
+**Total ajouté** : 106 tests intégration / 5 tests unitaires.
 
-### Priorité moyenne
+### ✅ Priorité moyenne — COMPLÉTÉE
 
-| Action | Module(s) |
-|---|---|
-| Ajouter test de rotation du refresh token (token révoqué → 401) | Auth |
-| Ajouter test IDOR sur `GET /recommendations/user/:userId` | Recommendation |
-| Ajouter test 403 sur `DELETE /ratings/:id` (autre utilisateur) | Rating |
-| Ajouter test `softDeleteBeer` exclu de `findAllBeers` | Beer |
-| Ajouter test anonymisation email sur `softDeleteUser` | User |
-| Ajouter test `startSession` — quiz inexistant → 404 | QuizzSession |
+| Action | Module(s) | Statut |
+|---|---|---|
+| Ajouter test de rotation du refresh token (token révoqué → 401) | Auth | ✅ Intégré |
+| Ajouter test IDOR sur `GET /recommendations/user/:userId` | Recommendation | ✅ Intégré |
+| Ajouter test 403 sur `DELETE /ratings/:id` (autre utilisateur) | Rating | ✅ Intégré |
+| Ajouter test `softDeleteBeer` exclu de `findAllBeers` | Beer | ✅ Intégré |
+| Ajouter test anonymisation email sur `softDeleteUser` | User | ✅ Intégré |
+| Ajouter test `startSession` — quiz inexistant → 404 | QuizzSession | ✅ Intégré |
+| Ajouter tests complémentaires `ratings.integration.test.ts` | Rating | ✅ +2 tests (GET user, PUT) |
 
 ### Priorité basse
 

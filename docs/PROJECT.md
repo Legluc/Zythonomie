@@ -366,13 +366,13 @@ JWT_REFRESH_EXPIRY=7d
 ```
 
 **✅ Definition of Done Phase 3** :
-- [ ] Aucun mot de passe en clair en DB
-- [ ] Login retourne access + refresh token
-- [ ] Refresh fonctionne avec rotation
-- [ ] `GET /api/auth/me` retourne le profil avec un token valide
-- [ ] Token expiré → 401
-- [ ] Tests unitaires : hashage, login correct, login mauvais password, refresh, logout
-- [ ] Tests intégration : flow register → login → me → refresh → logout
+- [*] Aucun mot de passe en clair en DB
+- [*] Login retourne access + refresh token
+- [*] Refresh fonctionne avec rotation
+- [*] `GET /api/auth/me` retourne le profil avec un token valide
+- [*] Token expiré → 401
+- [*] Tests unitaires : hashage, login correct, login mauvais password, refresh, logout
+- [*] Tests intégration : flow register → login → me → refresh → logout
 
 ---
 
